@@ -1,105 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>Mobile File Upload</title>
-    <!-- مكتبة Uploadcare لرفع الملفات -->
-    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" data-public-key="8a35eb8e7ba4b585ffa6"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رفع ملف لجلسة الكشك</title>
+    <!-- إضافة مكتبة Uploadcare -->
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+    
+    <!-- **التصحيح هنا: إضافة المفتاح العام لـ Uploadcare** -->
+    <script>
+        UPLOADCARE_PUBLIC_KEY = '8a35eb8e7ba4b585ffa6';
+        UPLOADCARE_LOCALE = 'ar'; // لتعريب واجهة المستخدم
+        UPLOADCARE_TABS = 'file url'; // لتقييد خيارات التحميل
+        UPLOADCARE_PREVIEW_STEP = true; // لعرض خطوة المعاينة
+        UPLOADCARE_MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+        UPLOADCARE_FILE_TYPES = 'pdf, jpeg, jpg, png, docx'; // أنواع الملفات المسموح بها
+    </script>
+
     <style>
-        body { 
-            font-family: sans-serif; 
-            text-align: center; 
-            padding: 20px;
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            background-color: #f4f4f9;
         }
-        .upload-area { 
-            margin-top: 50px; 
-            border: 2px dashed #ccc; 
-            padding: 40px; 
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
             border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1 );
+            max-width: 400px;
+            margin: auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .session-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>رفع ملف لجلسة الكشك</h1>
-    <p>معرف الجلسة: <span id="session-id-display">جاري التحميل...</span></p>
-    
-    <div class="upload-area">
-        <!-- أداة رفع Uploadcare -->
-        <input type="hidden" role="uploadcare-uploader" id="uploader-widget" />
+    <div class="container">
+        <h1>رفع ملف لجلسة الكشك</h1>
+        
+        <div id="error-display" class="error-message" style="display:none;"></div>
+
+        <div id="main-content">
+            <div class="session-info">
+                <p>معرف الجلسة: <span id="session-id-display">...</span></p>
+            </div>
+            
+            <!-- حقل Uploadcare -->
+            <input type="hidden" role="uploadcare-uploader" id="file-uploader" />
+        </div>
     </div>
 
     <script>
-        // !!! Web app URL الخاص بك (الذي حصلت عليه من Google Apps Script ) !!!
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-ERdeORuJB3W2zStyZhB06uK_V1kwLrm-tEjrSLU9fo6Bjv_ON-8uPxqzG4jjtalt/exec';
+        // رابط API الخاص بـ Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw-ERdeORuJB3W2zStyZhB06uK_V1kwLrm-tEjrSLU9fo6Bjv_ON-8uPxqzG4jjtalt/exec';
 
-        // 1. الحصول على المعاملات من رابط URL
-        const urlParams = new URLSearchParams(window.location.search );
-        const sessionId = urlParams.get('session');
-        const kioskId = urlParams.get('kiosk');
+        let sessionId = '';
+        let kioskId = '';
 
-        // عرض معرف الجلسة
-        document.getElementById('session-id-display').textContent = sessionId || 'غير متوفر';
-
-        if (!sessionId || !kioskId) {
-            alert("خطأ: معرف الجلسة أو الكشك مفقود. يرجى مسح رمز QR مرة أخرى.");
-        } else {
-            // 2. تهيئة أداة رفع Uploadcare
-            const uploader = uploadcare.getWidget('#uploader-widget');
-
-            // 3. تعيين خيارات الأداة
-            uploader.setOptions({
-                multiple: false,
-                imagesOnly: false,
-                validators: [
-                    uploadcare.validators.fileType(['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
-                    uploadcare.validators.fileSize(0, 20 * 1024 * 1024) // 20 ميجابايت
-                ]
-            });
-
-            // 4. إرفاق البيانات الوصفية قبل الرفع
-            uploader.onUploadDialog.on('init', (dialog) => {
-                dialog.fileColl.onAdd.add((file) => {
-                    file.setMetadata({
-                        session_id: sessionId,
-                        kiosk_id: kioskId,
-                        upload_time: new Date().toISOString()
-                    });
-                });
-            });
-
-            // 5. التعامل مع اكتمال الرفع
-            uploader.onUploadComplete.add((file) => {
-                const fileUuid = file.uuid;
-                sendDataToGoogleSheets(sessionId, kioskId, fileUuid);
-            });
+        // **التصحيح هنا: دالة لقراءة المعرفات من رابط URL**
+        function getUrlParameter(name ) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            const results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        // دالة لإرسال البيانات إلى Google Sheets API
-        function sendDataToGoogleSheets(sessionId, kioskId, fileUuid) {
-            const dataToSend = new FormData();
-            dataToSend.append('session_id', sessionId);
-            dataToSend.append('kiosk_id', kioskId);
-            dataToSend.append('file_uuid', fileUuid);
-            dataToSend.append('upload_time', new Date().toISOString());
+        function initialize() {
+            sessionId = getUrlParameter('session_id');
+            kioskId = getUrlParameter('kiosk_id');
 
-            fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                body: dataToSend,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success'){
-                    alert(`تم الرفع وإرسال البيانات بنجاح! UUID: ${fileUuid}. يمكنك الآن إغلاق هذه النافذة والعودة إلى الكشك.`);
-                } else {
-                    alert('تم الرفع بنجاح، لكن فشل إرسال الإشعار إلى الكشك. يرجى المحاولة مرة أخرى أو إبلاغ الموظفين.');
+            const errorDisplay = document.getElementById('error-display');
+            const mainContent = document.getElementById('main-content');
+
+            if (!sessionId || !kioskId) {
+                // عرض رسالة الخطأ إذا كانت المعرفات مفقودة
+                errorDisplay.textContent = 'خطأ: معرف الجلسة أو الكشك مفقود. يرجى مسح رمز QR مرة أخرى.';
+                errorDisplay.style.display = 'block';
+                mainContent.style.display = 'none';
+                return;
+            }
+
+            // عرض معرف الجلسة
+            document.getElementById('session-id-display').textContent = sessionId;
+
+            // 2. معالجة حدث اكتمال التحميل
+            const uploader = document.getElementById('file-uploader');
+            
+            uploader.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // إرسال البيانات إلى Google Apps Script
+                    sendDataToApi(file.uuid);
                 }
-                // اختياري: إغلاق النافذة بعد تأخير قصير
-                setTimeout(() => { window.close(); }, 3000);
-            })
-            .catch(error => {
-                console.error('خطأ في إرسال البيانات إلى Google Sheets:', error);
-                alert('تم الرفع بنجاح، لكن فشل إرسال الإشعار إلى الكشك. يرجى المحاولة مرة أخرى أو إبلاغ الموظفين.');
             });
         }
+
+        // 3. إرسال البيانات إلى Google Apps Script
+        async function sendDataToApi(fileUuid) {
+            const formData = new FormData();
+            formData.append('action', 'upload');
+            formData.append('session_id', sessionId);
+            formData.append('kiosk_id', kioskId);
+            formData.append('file_uuid', fileUuid);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors' // مهم لتجنب مشاكل CORS مع Apps Script
+                });
+
+                // لا يمكن قراءة استجابة JSON مع 'no-cors'، لذا نعتمد على نجاح الإرسال
+                // يمكننا عرض رسالة نجاح بسيطة للمستخدم
+                document.getElementById('main-content').innerHTML = `
+                    <h2 style="color: green;">تم تحميل الملف بنجاح!</h2>
+                    <p>يمكنك الآن العودة إلى الكشك.</p>
+                    <div class="session-info">
+                        <p>معرف الملف: ${fileUuid}</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error sending data to API:', error);
+                document.getElementById('main-content').innerHTML = `
+                    <h2 style="color: red;">حدث خطأ!</h2>
+                    <p>لم نتمكن من تسجيل التحميل. يرجى المحاولة مرة أخرى.</p>
+                `;
+            }
+        }
+
+        // بدء التهيئة عند تحميل الصفحة
+        window.onload = initialize;
     </script>
 </body>
 </html>
