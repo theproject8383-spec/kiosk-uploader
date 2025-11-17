@@ -65,6 +65,14 @@
         </div>
     </div>
 
+    <!-- **النموذج المخفي الجديد لإرسال البيانات إلى Apps Script** -->
+    <form id="api-form" target="_self" method="POST" style="display:none;">
+        <input type="hidden" name="action" value="upload">
+        <input type="hidden" name="session_id" id="form-session-id">
+        <input type="hidden" name="kiosk_id" id="form-kiosk-id">
+        <input type="hidden" name="file_uuid" id="form-file-uuid">
+    </form>
+
     <script>
         // رابط API الخاص بـ Google Apps Script (تم تحديثه)
         const API_URL = 'https://script.google.com/macros/s/AKfycbzYe43-ZczUW0aqhamnZJhhA33R_e6UNJ3NITjYDGR6viDTXA0_N8b2wcUWK5ytx2Zm/exec';
@@ -88,14 +96,12 @@
             const mainContent = document.getElementById('main-content');
 
             if (!sessionId || !kioskId) {
-                // عرض رسالة الخطأ إذا كانت المعرفات مفقودة
                 errorDisplay.textContent = 'خطأ: معرف الجلسة أو الكشك مفقود. يرجى مسح رمز QR مرة أخرى.';
                 errorDisplay.style.display = 'block';
                 mainContent.style.display = 'none';
                 return;
             }
 
-            // عرض معرف الجلسة
             document.getElementById('session-id-display').textContent = sessionId;
 
             // 2. معالجة حدث اكتمال التحميل
@@ -104,43 +110,33 @@
             uploader.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    // إرسال البيانات إلى Google Apps Script
+                    // إرسال البيانات إلى Google Apps Script باستخدام النموذج المخفي
                     sendDataToApi(file.uuid);
                 }
             });
         }
 
-        // 3. إرسال البيانات إلى Google Apps Script باستخدام XMLHttpRequest (لحل مشكلة الاتصال)
+        // 3. إرسال البيانات إلى Google Apps Script باستخدام النموذج المخفي
         function sendDataToApi(fileUuid) {
-            const formData = new FormData();
-            formData.append('action', 'upload');
-            formData.append('session_id', sessionId);
-            formData.append('kiosk_id', kioskId);
-            formData.append('file_uuid', fileUuid);
+            // تحديث حقول النموذج المخفي
+            document.getElementById('form-session-id').value = sessionId;
+            document.getElementById('form-kiosk-id').value = kioskId;
+            document.getElementById('form-file-uuid').value = fileUuid;
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', API_URL);
-            
-            xhr.onload = function() {
-                // نفترض النجاح إذا لم يكن هناك خطأ في الشبكة
-                document.getElementById('main-content').innerHTML = `
-                    <h2 style="color: green;">تم تحميل الملف بنجاح!</h2>
-                    <p>تم إرسال البيانات إلى الكشك. يمكنك الآن العودة إلى الكشك.</p>
-                    <div class="session-info">
-                        <p>معرف الملف: ${fileUuid}</p>
-                    </div>
-                `;
-            };
+            const form = document.getElementById('api-form');
+            form.action = API_URL; // تعيين رابط Apps Script كوجهة للنموذج
 
-            xhr.onerror = function() {
-                console.error('Error sending data to API:', xhr.statusText);
-                document.getElementById('main-content').innerHTML = `
-                    <h2 style="color: red;">حدث خطأ!</h2>
-                    <p>لم نتمكن من تسجيل التحميل. يرجى المحاولة مرة أخرى.</p>
-                `;
-            };
+            // عرض رسالة نجاح فورية للمستخدم
+            document.getElementById('main-content').innerHTML = `
+                <h2 style="color: green;">تم تحميل الملف بنجاح!</h2>
+                <p>جاري تسجيل البيانات. يمكنك الآن العودة إلى الكشك.</p>
+                <div class="session-info">
+                    <p>معرف الملف: ${fileUuid}</p>
+                </div>
+            `;
 
-            xhr.send(formData);
+            // إرسال النموذج المخفي
+            form.submit();
         }
 
         // بدء التهيئة عند تحميل الصفحة
@@ -148,5 +144,7 @@
     </script>
 </body>
 </html>
+
+
 
 
