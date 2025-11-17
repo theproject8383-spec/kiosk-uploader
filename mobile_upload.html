@@ -7,7 +7,7 @@
     <!-- إضافة مكتبة Uploadcare -->
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
     
-    <!-- **التصحيح هنا: إضافة المفتاح العام لـ Uploadcare** -->
+    <!-- **الإعدادات: المفتاح العام لـ Uploadcare** -->
     <script>
         UPLOADCARE_PUBLIC_KEY = '8a35eb8e7ba4b585ffa6';
         UPLOADCARE_LOCALE = 'ar'; // لتعريب واجهة المستخدم
@@ -66,13 +66,13 @@
     </div>
 
     <script>
-        // رابط API الخاص بـ Google Apps Script
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw-ERdeORuJB3W2zStyZhB06uK_V1kwLrm-tEjrSLU9fo6Bjv_ON-8uPxqzG4jjtalt/exec';
+        // رابط API الخاص بـ Google Apps Script (تم تحديثه)
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzYe43-ZczUW0aqhamnZJhhA33R_e6UNJ3NITjYDGR6viDTXA0_N8b2wcUWK5ytx2Zm/exec';
 
         let sessionId = '';
         let kioskId = '';
 
-        // **التصحيح هنا: دالة لقراءة المعرفات من رابط URL**
+        // دالة لقراءة المعرفات من رابط URL
         function getUrlParameter(name ) {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
             const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -110,38 +110,37 @@
             });
         }
 
-        // 3. إرسال البيانات إلى Google Apps Script
-        async function sendDataToApi(fileUuid) {
+        // 3. إرسال البيانات إلى Google Apps Script باستخدام XMLHttpRequest (لحل مشكلة الاتصال)
+        function sendDataToApi(fileUuid) {
             const formData = new FormData();
             formData.append('action', 'upload');
             formData.append('session_id', sessionId);
             formData.append('kiosk_id', kioskId);
             formData.append('file_uuid', fileUuid);
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'no-cors' // مهم لتجنب مشاكل CORS مع Apps Script
-                });
-
-                // لا يمكن قراءة استجابة JSON مع 'no-cors'، لذا نعتمد على نجاح الإرسال
-                // يمكننا عرض رسالة نجاح بسيطة للمستخدم
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL);
+            
+            xhr.onload = function() {
+                // نفترض النجاح إذا لم يكن هناك خطأ في الشبكة
                 document.getElementById('main-content').innerHTML = `
                     <h2 style="color: green;">تم تحميل الملف بنجاح!</h2>
-                    <p>يمكنك الآن العودة إلى الكشك.</p>
+                    <p>تم إرسال البيانات إلى الكشك. يمكنك الآن العودة إلى الكشك.</p>
                     <div class="session-info">
                         <p>معرف الملف: ${fileUuid}</p>
                     </div>
                 `;
+            };
 
-            } catch (error) {
-                console.error('Error sending data to API:', error);
+            xhr.onerror = function() {
+                console.error('Error sending data to API:', xhr.statusText);
                 document.getElementById('main-content').innerHTML = `
                     <h2 style="color: red;">حدث خطأ!</h2>
                     <p>لم نتمكن من تسجيل التحميل. يرجى المحاولة مرة أخرى.</p>
                 `;
-            }
+            };
+
+            xhr.send(formData);
         }
 
         // بدء التهيئة عند تحميل الصفحة
@@ -149,3 +148,5 @@
     </script>
 </body>
 </html>
+
+
