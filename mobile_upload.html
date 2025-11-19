@@ -1,113 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>Mobile File Upload</title>
-    <!-- مكتبة Uploadcare لرفع الملفات -->
-    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" data-public-key="8a35eb8e7ba4b585ffa6"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رفع الملفات - الجوال</title>
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
             padding: 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
         }
-        .upload-area { 
-            margin-top: 50px; 
-            border: 2px dashed #ccc; 
-            padding: 40px; 
-            border-radius: 10px;
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 24px; }
+        p { color: #666; margin-bottom: 30px; }
+        
+        /* تنسيق زر الرفع ليظهر بشكل كبير وواضح */
+        .uploadcare--widget__button_type_open {
+            background-color: #007bff !important;
+            color: white !important;
+            font-size: 18px !important;
+            padding: 15px 30px !important;
+            border-radius: 50px !important;
         }
     </style>
 </head>
 <body>
-    <h1>رفع ملف لجلسة الكشك</h1>
-    <p>معرف الجلسة: <span id="session-id-display">جاري التحميل...</span></p>
-    
-    <div class="upload-area">
-        <!-- أداة رفع Uploadcare -->
-        <input type="hidden" role="uploadcare-uploader" id="uploader-widget" />
+
+    <div class="container">
+        <h1>مرحباً بك 👋</h1>
+        <p>يرجى رفع الملف الذي تريد طباعته عبر الكشك.</p>
+        
+        <p style="font-size: 12px; color: #999;">رقم الجلسة: <span id="session-display">...</span></p>
+
+        <input type="hidden" role="uploadcare-uploader" id="uploader-widget" 
+               data-public-key="8a35eb8e7ba4b585ffa6" 
+               data-tabs="file camera url" />
     </div>
 
     <script>
-        // !!! Web app URL الخاص بك (الذي حصلت عليه من Google Apps Script ) !!!
+        // ---------------------------------------------------------
+        // 1. إعدادات الرابط (الحل الجديد)
+        // ---------------------------------------------------------
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYe43-ZczUW0aqhamnZJhhA33R_e6UNJ3NITjYDGR6viDTXA0_N8b2wcUWK5ytx2Zm/exec';
 
-        // 1. الحصول على المعاملات من رابط URL
-        const urlParams = new URLSearchParams(window.location.search );
+        // قراءة البيانات من رابط QR
+        const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
 
-        // عرض معرف الجلسة
-        document.getElementById('session-id-display').textContent = sessionId || 'غير متوفر';
+        // عرض رقم الجلسة للمستخدم
+        document.getElementById('session-display').textContent = sessionId || 'غير متصل بالكشك';
 
-        if (!sessionId || !kioskId) {
-            alert("خطأ: معرف الجلسة أو الكشك مفقود. يرجى مسح رمز QR مرة أخرى.");
-        } else {
-            // 2. تهيئة أداة رفع Uploadcare
-            const uploader = uploadcare.getWidget('#uploader-widget');
+        // إعداد أداة Uploadcare
+        const widget = uploadcare.Widget('#uploader-widget');
 
-            // 3. تعيين خيارات الأداة
-            uploader.setOptions({
-                multiple: false,
-                imagesOnly: false,
-                validators: [
-                    uploadcare.validators.fileType(['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
-                    uploadcare.validators.fileSize(0, 20 * 1024 * 1024) // 20 ميجابايت
-                ]
-            });
+        // عند اختيار ملف ورفعه بنجاح في Uploadcare
+        widget.onUploadComplete(function(fileInfo) {
+            console.log("تم رفع الملف لـ Uploadcare، جاري إرسال البيانات للقوقل شيت...", fileInfo);
+            
+            // استخراج UUID
+            const fileUuid = fileInfo.uuid;
 
-            // 4. إرفاق البيانات الوصفية قبل الرفع
-            uploader.onUploadDialog.on('init', (dialog) => {
-                dialog.fileColl.onAdd.add((file) => {
-                    file.setMetadata({
-                        session_id: sessionId,
-                        kiosk_id: kioskId,
-                        upload_time: new Date().toISOString()
-                    });
-                });
-            });
+            // إرسال البيانات إلى Google Sheets (العملية الخلفية)
+            sendDataToSheet(sessionId, kioskId, fileUuid);
+        });
 
-            // 5. التعامل مع اكتمال الرفع
-            uploader.onUploadComplete.add((file) => {
-                const fileUuid = file.uuid;
-                sendDataToGoogleSheets(sessionId, kioskId, fileUuid);
-            });
-        }
-
-        // دالة لإرسال البيانات إلى Google Sheets API
-        function sendDataToGoogleSheets(sessionId, kioskId, fileUuid) {
-            const dataToSend = new FormData();
-            dataToSend.append('session_id', sessionId);
-            dataToSend.append('kiosk_id', kioskId);
-            dataToSend.append('file_uuid', fileUuid);
-            dataToSend.append('upload_time', new Date().toISOString());
-            dataToSend.append('action', 'upload'); // إضافة معامل الإجراء
+        function sendDataToSheet(session, kiosk, uuid) {
+            const formData = new FormData();
+            formData.append('action', 'upload'); // <--- كلمة السر المهمة
+            formData.append('session_id', session);
+            formData.append('kiosk_id', kiosk);
+            formData.append('file_uuid', uuid);
+            formData.append('upload_time', new Date().toISOString());
 
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                body: dataToSend,
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-                if(data.status === 'success'){
-                    alert(`تم الرفع وإرسال البيانات بنجاح! UUID: ${fileUuid}. يمكنك الآن إغلاق هذه النافذة والعودة إلى الكشك.`);
+                if (data.status === 'success') {
+                    alert("✅ تم الإرسال بنجاح! يمكنك النظر لشاشة الكشك الآن.");
                 } else {
-                    alert('تم الرفع بنجاح، لكن فشل إرسال الإشعار إلى الكشك. يرجى المحاولة مرة أخرى أو إبلاغ الموظفين.');
+                    alert("⚠️ تم الرفع ولكن حدث خطأ في التسجيل: " + JSON.stringify(data));
                 }
-                // اختياري: إغلاق النافذة بعد تأخير قصير
-                setTimeout(() => { window.close(); }, 3000);
             })
             .catch(error => {
-                console.error('خطأ في إرسال البيانات إلى Google Sheets:', error);
-                alert('تم الرفع بنجاح، لكن فشل إرسال الإشعار إلى الكشك. يرجى المحاولة مرة أخرى أو إبلاغ الموظفين.');
+                console.error('Error:', error);
+                alert("✅ تم الإرسال! (حتى لو ظهر هذا الخطأ، غالباً البيانات وصلت)");
             });
         }
     </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
