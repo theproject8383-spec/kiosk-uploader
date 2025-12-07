@@ -11,7 +11,8 @@
         }
         .printer-icon { width: 120px; height: 120px; margin-bottom: 20px; fill: #3498db; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        h1 { color: #2c3e50; font-size: 36px; }
+        h1 { color: #2c3e50; font-size: 36px; margin: 0; }
+        p { color: #7f8c8d; font-size: 20px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -21,13 +22,14 @@
     </svg>
 
     <h1>جاري الطباعة...</h1>
-    <p>شكراً لزيارتكم</p>
+    <p>شكراً لاستخدامك طابعتي</p>
 
     <script>
-        // بعد 8 ثواني، ارجع لصفحة الباركود لبدء جلسة جديدة
+        // العودة للصفحة الرئيسية (السرية) بعد 7 ثواني
+        // 🔴 لاحظ الرابط هنا يشير للملف السري حقنا
         setTimeout(() => {
-            window.location.href = "kiosk_start_x99_secure.html";
-        }, 8000);
+            window.location.href = "kiosk_screen_x99.html";
+        }, 7000);
     </script>
 
 </body>
