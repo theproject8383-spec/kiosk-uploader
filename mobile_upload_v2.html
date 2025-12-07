@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>رفع الملف - طابعتي</title>
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 غير هذا المفتاح بمفتاحك الخاص من Uploadcare لاحقاً
-        UPLOADCARE_LOCALE = "ar"; // لغة عربية
-        UPLOADCARE_TABS = "file camera url"; // مصادر الملفات
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 غيره بمفتاحك لاحقاً لو حبيت
+        UPLOADCARE_LOCALE = "ar";
+        UPLOADCARE_TABS = "file camera url"; 
     </script>
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
     <style>
@@ -22,13 +22,12 @@
             align-items: center;
             min-height: 100vh;
         }
-        .header { margin-bottom: 40px; margin-top: 20px; }
-        h2 { color: #2c3e50; margin: 0; font-size: 24px; }
-        p { color: #7f8c8d; margin-top: 5px; }
+        .header { margin-bottom: 30px; margin-top: 20px; }
+        h2 { color: #2c3e50; margin: 0; font-size: 22px; }
         
         .upload-box {
             background: white;
-            padding: 30px;
+            padding: 40px 20px;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             width: 100%;
@@ -41,17 +40,19 @@
             border-radius: 10px;
             display: none;
             font-weight: bold;
+            font-size: 14px;
         }
         .success { background-color: #d4edda; color: #155724; }
         .error { background-color: #f8d7da; color: #721c24; }
 
-        /* تخصيص زر الرفع */
+        /* ستايل زر الرفع الأزرق */
         .uploadcare--widget__button_type_open {
             background-color: #3498db !important;
             color: white !important;
             border-radius: 50px !important;
-            padding: 12px 25px !important;
-            font-size: 16px !important;
+            padding: 12px 30px !important;
+            font-size: 18px !important;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -59,46 +60,42 @@
 
     <div class="header">
         <h2>🖨️ طابعتي</h2>
-        <p>ارفع ملفك للطباعة فوراً</p>
+        <p style="color: #7f8c8d;">ارفع ملف PDF أو صورة للطباعة</p>
     </div>
 
     <div class="upload-box">
         <input type="hidden" role="uploadcare-uploader" id="uploader" />
-        
         <div id="status" class="status-message"></div>
     </div>
 
-    <p style="margin-top: 50px; font-size: 12px; color: #ccc;">رقم الجلسة: <span id="session-debug">--</span></p>
+    <p style="margin-top: auto; margin-bottom: 20px; font-size: 12px; color: #ccc;">Session ID: <span id="session-debug">--</span></p>
 
     <script>
-        // 🔴 رابط سكربت قوقل (نفس القديم)
+        // 🔴 رابط سكربت قوقل
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYe43-ZczUW0aqhamnZJhhA33R_e6UNJ3NITjYDGR6viDTXA0_N8b2wcUWK5ytx2Zm/exec";
 
-        // استخراج البيانات من الرابط (QR Code)
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
         
-        document.getElementById('session-debug').innerText = sessionId || "غير معروف";
+        document.getElementById('session-debug').innerText = sessionId || "غير محدد";
 
         const widget = uploadcare.Widget('[role=uploadcare-uploader]');
 
-        // عند اكتمال الرفع
         widget.onUploadComplete(function(fileInfo) {
-            showStatus("جاري إرسال الملف للكشك...", "normal");
+            showStatus("⏳ جاري إرسال الملف للكشك...", "normal");
             
-            // إرسال البيانات لقوقل
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // مهم جداً عشان ما يطلع خطأ
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `action=upload_file&session_id=${sessionId}&kiosk_id=${kioskId}&file_uuid=${fileInfo.uuid}&file_url=${fileInfo.cdnUrl}`
             })
             .then(() => {
-                showStatus("✅ تم الإرسال بنجاح! طابعتك تعمل الآن.", "success");
+                showStatus("✅ تم الإرسال بنجاح! انظر لشاشة الكشك.", "success");
             })
             .catch(err => {
-                showStatus("❌ حدث خطأ في الاتصال، حاول مرة أخرى.", "error");
+                showStatus("❌ حدث خطأ، حاول مرة أخرى.", "error");
             });
         });
 
@@ -107,8 +104,8 @@
             el.innerText = text;
             el.style.display = 'block';
             el.className = 'status-message ' + type;
+            if(type === 'normal') el.style.backgroundColor = '#e2e6ea';
         }
     </script>
-
 </body>
 </html>
