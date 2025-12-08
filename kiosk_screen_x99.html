@@ -9,18 +9,16 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; text-align: center; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 600px; width: 80%; position: relative; z-index: 2; }
         
-        /* 🏷️ تصميم بطاقة رقم الجهاز */
         .device-badge { position: absolute; top: 20px; left: 20px; background-color: #eef2f7; color: #2c3e50; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 14px; border: 1px solid #dce4ec; display: flex; align-items: center; gap: 5px; }
         .status-dot { width: 8px; height: 8px; background-color: #27ae60; border-radius: 50%; display: inline-block; }
 
         h1 { color: #2c3e50; margin-bottom: 5px; margin-top: 10px; }
         .status-text { color: #7f8c8d; font-size: 18px; margin-bottom: 30px; font-weight: 500; }
 
-        /* 🐍 حاوية الثعبان */
+        /* حاوية الثعبان */
         .qr-wrapper { position: relative; width: 260px; height: 260px; margin: 0 auto 20px auto; display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.1); overflow: hidden; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         .qr-wrapper span { position: absolute; display: block; }
         
-        /* حركة خطوط الثعبان */
         .qr-wrapper span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: btn-anim1 2s linear infinite; }
         @keyframes btn-anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
         .qr-wrapper span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: btn-anim2 2s linear infinite; animation-delay: 0.5s; }
@@ -40,26 +38,21 @@
 <body>
     <div class="container">
         <div class="device-badge"><span class="status-dot"></span>جهاز رقم <span id="device-id-display">--</span></div>
-
         <h1>امسح الكود لرفع الملف</h1>
         <p class="status-text">بانتظار الملف من الجوال<span class="dots"></span></p>
-        
-        <div class="qr-wrapper">
-            <span></span> <span></span> <span></span> <span></span>
-            <div id="qrcode"></div>
-        </div>
-        
+        <div class="qr-wrapper"><span></span> <span></span> <span></span> <span></span><div id="qrcode"></div></div>
         <div class="session-info">رقم الجلسة: <span id="session-display"></span></div>
         <button class="refresh-btn" onclick="location.reload()">🔄 تحديث الجلسة</button>
     </div>
 
     <script>
         // ============================================================
-        // 🛑 التعديل هنا: اسم المستخدم الجديد مع المشروع القديم 🛑
+        // 🛑 تم تصحيح الرابط بناءً على اسم المشروع الجديد: kiosk-uploader 🛑
         
         const KIOSK_NUMBER = "01"; 
-        // لاحظ الرابط: المستخدم theproject8383-spec والمشروع kiosk_upload
-        const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk_upload/mobile_upload_v2.html"; 
+        
+        // لاحظ الرابط الجديد هنا 👇
+        const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html"; 
         
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYe43-ZczUW0aqhamnZJhhA33R_e6UNJ3NITjYDGR6viDTXA0_N8b2wcUWK5ytx2Zm/exec";
         const PRINTING_PAGE_NAME = "status_printing_z88.html";
