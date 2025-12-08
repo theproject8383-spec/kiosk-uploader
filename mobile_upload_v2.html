@@ -6,7 +6,7 @@
     <title>خدمة الطباعة الذاتية</title>
     
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 مفتاحك هنا
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; 
         UPLOADCARE_LOCALE = "ar"; 
         UPLOADCARE_TABS = "file"; 
     </script>
@@ -16,7 +16,6 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';</script>
 
     <style>
-        /* تنسيق عام نظيف */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: #ffffff; 
@@ -25,55 +24,53 @@
             min-height: 100vh; 
         }
 
-        /* ========================
-           1. تصميم الثعبان (الشاشة الرئيسية)
-           ======================== */
-        #home-screen {
+        /* 1. تصميم شاشة اللودينج (الثعبان) */
+        #loading-screen {
             display: flex; flex-direction: column; align-items: center; width: 100%;
         }
 
         .snake-container {
             position: relative;
-            width: 140px; height: 140px;
+            width: 120px; height: 120px;
             display: flex; justify-content: center; align-items: center;
             background: rgba(245, 245, 245, 0.7);
             border-radius: 25px;
-            cursor: pointer;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            overflow: hidden; /* يمنع ظهور الخطوط خارج الصندوق */
+            overflow: hidden;
             margin-bottom: 25px;
-            transition: transform 0.2s;
         }
-        .snake-container:active { transform: scale(0.95); }
 
-        /* خطوط الثعبان المتحركة */
         .snake-container span { position: absolute; display: block; }
         
-        .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 2s linear infinite; }
+        /* تسريع الحركة قليلاً لتعطي شعور بالنشاط */
+        .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 1.5s linear infinite; }
         @keyframes anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
 
-        .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 2s linear infinite; animation-delay: 0.5s; }
+        .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 1.5s linear infinite; animation-delay: 0.375s; }
         @keyframes anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
 
-        .snake-container span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: anim3 2s linear infinite; animation-delay: 1s; }
+        .snake-container span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: anim3 1.5s linear infinite; animation-delay: 0.75s; }
         @keyframes anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
 
-        .snake-container span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: anim4 2s linear infinite; animation-delay: 1.5s; }
+        .snake-container span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: anim4 1.5s linear infinite; animation-delay: 1.125s; }
         @keyframes anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
 
-        /* أيقونة السحابة */
-        .cloud-icon { width: 60px; height: 60px; fill: #3498db; animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        .cloud-icon { width: 50px; height: 50px; fill: #3498db; animation: float 2s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
 
-        h2 { margin: 0; color: #2c3e50; font-size: 22px; }
-        p { margin: 10px 0 0 0; color: #95a5a6; font-size: 15px; }
+        h2 { margin: 0; color: #2c3e50; font-size: 20px; font-weight: 600; }
+        p { margin: 8px 0 0 0; color: #bdc3c7; font-size: 14px; animation: pulse-text 2s infinite; }
+        @keyframes pulse-text { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        /* ========================
-           2. شاشة الفاتورة (مخفية)
-           ======================== */
+        /* زر إعادة المحاولة (يظهر لو قفل النافذة) */
+        .retry-btn {
+            margin-top: 30px; padding: 10px 25px; background: white; border: 1px solid #3498db; 
+            color: #3498db; border-radius: 50px; cursor: pointer; display: none; font-weight: bold;
+        }
+
+        /* 2. شاشة الفاتورة (مخفية) */
         #invoice-screen {
-            display: none; /* مخفي */
-            width: 100%; max-width: 350px;
+            display: none; width: 100%; max-width: 350px;
             background: white; border-radius: 20px; padding: 25px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
@@ -88,12 +85,9 @@
         }
         .apple-logo { width: 45px; height: 100%; background-image: url("https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg"); background-repeat: no-repeat; background-position: center; background-size: contain; }
 
-        /* ========================
-           3. شاشة النجاح (مخفية)
-           ======================== */
+        /* 3. شاشة النجاح (مخفية) */
         #success-screen {
-            display: none; /* مخفي */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100;
             flex-direction: column; justify-content: center; align-items: center;
         }
         .checkmark { width: 80px; height: 80px; border-radius: 50%; display: block; stroke-width: 2; stroke: #4bb71b; stroke-miterlimit: 10; margin-bottom: 20px; box-shadow: inset 0px 0px 0px #4bb71b; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
@@ -101,20 +95,21 @@
         .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-        /* إخفاء زر الرفع الافتراضي */
         .uploadcare--widget__button_type_open { display: none !important; }
 
     </style>
 </head>
 <body>
 
-    <div id="home-screen">
-        <div class="snake-container" onclick="openWidget()">
+    <div id="loading-screen">
+        <div class="snake-container">
             <span></span><span></span><span></span><span></span>
             <svg class="cloud-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
         </div>
-        <h2>اضغط هنا للرفع</h2>
-        <p>اختر ملف لطباعته (20 هللة للصفحة)</p>
+        <h2 id="status-text">جاري الاتصال بالنظام...</h2>
+        <p id="sub-status-text">سيتم فتح نافذة الملفات تلقائياً</p>
+
+        <button class="retry-btn" onclick="openWidget()">📂 اختر ملف للطباعة</button>
     </div>
 
     <div id="invoice-screen">
@@ -136,19 +131,15 @@
     <div id="success-screen">
         <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
         <h2>تم الدفع بنجاح!</h2>
-        <p>سيتم الطباعة فوراً...</p>
+        <p>جاري الطباعة...</p>
     </div>
 
     <input type="hidden" role="uploadcare-uploader" id="uploader" data-multiple="false" data-crop="off" />
 
     <script>
-        // 💰 السعر: 20 هللة للصفحة
         const PRICE_PER_PAGE = 0.20; 
-
-        // 🔗 رابط السكربت الخاص بك
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
 
-        // استخراج بيانات الجلسة
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
@@ -158,45 +149,48 @@
         let finalPrice = 0;
         let finalPages = 1;
 
-        // دالة فتح الودجت
+        // دالة لفتح الودجت
         function openWidget() {
-            widget.openDialog();
+            widget.openDialog().done(function() {
+                // هذا الكود يشتغل إذا العميل سكر النافذة بدون ما يرفع شي
+                document.querySelector('.retry-btn').style.display = 'block';
+                document.getElementById('status-text').innerText = "بانتظار اختيار الملف";
+                document.getElementById('sub-status-text').style.display = 'none';
+            });
         }
 
-        // عند اختيار ملف
+        // 🔥 الفتح التلقائي: انتظر 1.5 ثانية (عشان يشوف اللودينج) ثم افتح
+        window.addEventListener('load', function() {
+            setTimeout(openWidget, 1500);
+        });
+
         widget.onUploadComplete(function(fileInfo) {
             finalFileInfo = fileInfo;
             
-            // إخفاء الشاشة الرئيسية وإظهار الفاتورة
-            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('invoice-screen').style.display = 'block';
             
-            // تقصير اسم الملف الطويل
             let name = fileInfo.name;
             if(name.length > 20) name = name.substring(0, 18) + "...";
             document.getElementById('file-name').innerText = name;
 
-            // حساب الصفحات
             if (fileInfo.mimeType === 'application/pdf') {
                 countPdfPages(fileInfo.cdnUrl);
             } else {
-                updateInvoice(1); // الصور تحسب صفحة واحدة
+                updateInvoice(1);
             }
         });
 
-        // دالة حساب صفحات PDF
         async function countPdfPages(url) {
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
                 updateInvoice(pdf.numPages);
             } catch (error) {
-                console.error(error);
-                updateInvoice(1); // في حال الخطأ نحسبها صفحة واحدة
+                updateInvoice(1);
             }
         }
 
-        // تحديث السعر
         function updateInvoice(pages) {
             finalPages = pages;
             finalPrice = (pages * PRICE_PER_PAGE).toFixed(2);
@@ -204,7 +198,6 @@
             document.getElementById('total-price').innerText = finalPrice + " ر.س";
         }
 
-        // محاكاة الدفع والإرسال
         function processPayment() {
             const btn = document.querySelector('.apple-pay-btn');
             btn.innerHTML = "Processing...";
@@ -212,11 +205,8 @@
             btn.disabled = true;
 
             setTimeout(() => {
-                // إظهار شاشة النجاح
                 document.getElementById('invoice-screen').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'flex';
-                
-                // إرسال البيانات للكشك
                 sendToKiosk();
             }, 2000);
         }
@@ -230,4 +220,5 @@
         }
     </script>
 </body>
+</html>
 </html>
