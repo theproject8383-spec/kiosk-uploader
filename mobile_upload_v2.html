@@ -4,21 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>رفع الملف - طابعتي</title>
+    
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; 
-        UPLOADCARE_LOCALE = "ar";
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 تذكر تغيير المفتاح لاحقاً
+        UPLOADCARE_LOCALE = "ar"; 
         UPLOADCARE_TABS = "file camera"; 
     </script>
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; text-align: center; padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        .container-box { background: white; padding: 40px 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 320px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container-box {
+            background: white; padding: 40px 30px; border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 320px;
+        }
         .header h2 { color: #2c3e50; margin: 0 0 10px 0; font-size: 24px; }
         .header p { color: #7f8c8d; margin: 0 0 30px 0; font-size: 16px; }
-        .uploadcare--widget__button_type_open { display: none; } 
-        .uploadcare--widget.uploadcare--widget_status_ready .uploadcare--widget__button_type_open { display: inline-block; background: linear-gradient(135deg, #3498db, #8e44ad) !important; color: white !important; border-radius: 50px !important; padding: 15px 35px !important; font-size: 18px !important; font-weight: bold; border: none; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); transition: transform 0.2s; }
-        .uploadcare--widget.uploadcare--widget_status_ready .uploadcare--widget__button_type_open:active { transform: scale(0.98); }
-        .status-message { margin-top: 25px; padding: 15px; border-radius: 12px; display: none; font-weight: bold; font-size: 14px; }
+
+        /* ستايل الزر (يظهر فقط لو العميل أغلق النافذة التلقائية) */
+        .uploadcare--widget__button_type_open {
+            background: linear-gradient(135deg, #3498db, #8e44ad) !important;
+            color: white !important;
+            border-radius: 50px !important;
+            padding: 15px 35px !important;
+            font-size: 18px !important;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .status-message {
+            margin-top: 25px; padding: 15px; border-radius: 12px; display: none; font-weight: bold; font-size: 14px;
+        }
         .normal { background-color: #e2e6ea; color: #2c3e50; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -26,31 +54,53 @@
     </style>
 </head>
 <body>
+
     <div class="container-box">
-        <div class="header"><h2>🖨️ طابعتي الذكية</h2><p>اختر ملف PDF أو صورة لبدء الطباعة</p></div>
+        <div class="header">
+            <h2>🖨️ طابعتي الذكية</h2>
+            <p>اختر ملف PDF أو صورة</p>
+        </div>
+
         <input type="hidden" role="uploadcare-uploader" id="uploader" data-crop="off" />
         <div id="status" class="status-message"></div>
     </div>
+
     <div class="footer-info">رقم الجلسة: <span id="session-debug">--</span></div>
+
     <script>
-        // 🚀 رابط السكربت الخاص بك (تم التحديث)
+        // 🔴 رابط السكربت الخاص بك (الصحيح)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
 
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
         document.getElementById('session-debug').innerText = sessionId || "غير محدد";
+
         const widget = uploadcare.Widget('[role=uploadcare-uploader]');
+
+        // 🔥 هذا السطر الجديد: يفتح نافذة اختيار الملفات تلقائياً عند الدخول
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                widget.openDialog();
+            }, 500); // تأخير نصف ثانية لضمان التحميل
+        });
+
         widget.onUploadComplete(function(fileInfo) {
             showStatus("⏳ جاري إرسال الملف للكشك... يرجى الانتظار", "normal");
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `action=upload_file&session_id=${sessionId}&kiosk_id=${kioskId}&file_uuid=${fileInfo.uuid}&file_url=${fileInfo.cdnUrl}`
-            }).then(() => { showStatus("✅ تم الإرسال بنجاح! تابع الشاشة أمامك.", "success"); })
-              .catch(err => { showStatus("❌ حدث خطأ في الاتصال، حاول مرة أخرى.", "error"); });
+            })
+            .then(() => { showStatus("✅ تم الإرسال بنجاح! تابع الشاشة أمامك.", "success"); })
+            .catch(err => { showStatus("❌ حدث خطأ في الاتصال، حاول مرة أخرى.", "error"); });
         });
-        function showStatus(text, type) { const el = document.getElementById('status'); el.innerText = text; el.style.display = 'block'; el.className = 'status-message ' + type; }
+
+        function showStatus(text, type) {
+            const el = document.getElementById('status');
+            el.innerText = text; el.style.display = 'block'; el.className = 'status-message ' + type;
+        }
     </script>
+
 </body>
 </html>
