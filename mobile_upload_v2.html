@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الدفع والطباعة</title>
+    <title>رفع الملف - طابعتي</title>
     
     <script>
         UPLOADCARE_PUBLIC_KEY = "demopublickey"; 
         UPLOADCARE_LOCALE = "ar"; 
-        UPLOADCARE_TABS = "file"; 
+        UPLOADCARE_TABS = "file camera"; 
     </script>
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
     
@@ -16,27 +16,47 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';</script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f2f2f7; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        .upload-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; max-width: 350px; text-align: center; margin-bottom: 20px; }
-        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+
+        /* 🐍 تصميم الثعبان (الشاشة الرئيسية) */
+        .snake-box {
+            position: relative; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center;
+            background: rgba(245, 245, 245, 0.5); border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .snake-box:active { transform: scale(0.95); }
+
+        .snake-box span { position: absolute; display: block; }
+        .snake-box span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: btn-anim1 2s linear infinite; }
+        @keyframes btn-anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
+        .snake-box span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: btn-anim2 2s linear infinite; animation-delay: 0.5s; }
+        @keyframes btn-anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
+        .snake-box span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: btn-anim3 2s linear infinite; animation-delay: 1s; }
+        @keyframes btn-anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
+        .snake-box span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: btn-anim4 2s linear infinite; animation-delay: 1.5s; }
+        @keyframes btn-anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
+
+        .cloud-icon { width: 60px; height: 60px; fill: #3498db; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+
+        .main-text { font-size: 20px; font-weight: bold; color: #2c3e50; margin: 0; }
+        .sub-text { font-size: 14px; color: #95a5a6; margin-top: 5px; }
+        .note-text { font-size: 12px; color: #e74c3c; margin-top: 20px; background: #fff5f5; padding: 8px 15px; border-radius: 20px; }
+
+        /* كارت الفاتورة (مخفي) */
         .invoice-card { 
-            background: white; border-radius: 20px; padding: 20px; width: 100%; max-width: 350px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: none; 
+            background: white; border-radius: 25px; padding: 25px; width: 100%; max-width: 350px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: none; text-align: center;
         }
         
-        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; color: #333; }
-        .row:last-child { border-bottom: none; }
-        .total { font-weight: bold; font-size: 18px; color: #000; margin-top: 10px; border-top: 2px dashed #ddd; padding-top: 15px; }
+        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; font-size: 15px; color: #333; }
+        .total { font-weight: bold; font-size: 20px; color: #000; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 20px; }
         
         .apple-pay-btn {
-            background-color: black; color: white; border-radius: 10px; width: 100%; height: 48px;
+            background-color: black; color: white; border-radius: 12px; width: 100%; height: 50px;
             display: flex; justify-content: center; align-items: center; cursor: pointer;
-            margin-top: 20px; font-size: 18px; font-weight: 500; -webkit-appearance: none; border: none;
-            gap: 8px;
+            margin-top: 25px; font-size: 18px; font-weight: 500; border: none; gap: 8px;
         }
-        .apple-pay-btn:active { transform: scale(0.98); opacity: 0.9; }
-        
         .apple-logo { width: 45px; height: 100%; background-image: url("https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg"); background-repeat: no-repeat; background-position: center; background-size: contain; }
 
         .success-overlay {
@@ -47,51 +67,54 @@
         .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #4bb71b; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
         .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-        
-        .uploadcare--widget__button_type_open { background: #007aff !important; color: white !important; border-radius: 50px !important; padding: 12px 25px !important; font-weight: bold; }
+
+        .uploadcare--widget__button_type_open { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="upload-screen" class="upload-card">
-        <h2 style="margin-top:0">رفع المستندات</h2>
-        <p style="color:#888; font-size:14px; margin-bottom:20px">سيتم حساب التكلفة: 1 ريال لكل 5 صفحات</p>
-        <input type="hidden" role="uploadcare-uploader" id="uploader" data-crop="off" />
+    <div id="home-screen">
+        <div class="snake-box" onclick="openWidget()">
+            <span></span><span></span><span></span><span></span>
+            <svg class="cloud-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+        </div>
+        
+        <h2 class="main-text">اضغط للرفع</h2>
+        <p class="sub-text">اختر ملف PDF أو صورة واحدة</p>
+        
+        <div class="note-text">📄 تنويه: لطباعة أوراق متعددة، يرجى دمجها في ملف PDF واحد</div>
     </div>
 
     <div id="invoice-screen" class="invoice-card">
-        <h3 style="margin-top:0; text-align:center">ملخص الطلب</h3>
+        <h3 style="margin-top:0">تفاصيل الطلب</h3>
         
-        <div class="row"><span>📄 الملف</span><span id="file-name">...</span></div>
-        <div class="row"><span>📑 عدد الصفحات</span><span id="page-count">جاري الحساب...</span></div>
-        <div class="row"><span>💰 سعر الصفحة</span><span>0.20 ر.س</span></div>
+        <div class="row"><span>الخدمة</span><span>طباعة مستند</span></div>
+        <div class="row"><span>الملف</span><span id="file-name" style="direction:ltr">...</span></div>
+        <div class="row"><span>عدد الصفحات</span><span id="page-count">...</span></div>
+        <div class="row"><span>سعر الصفحة</span><span>0.20 ر.س</span></div>
         
         <div class="row total">
-            <span>المجموع للدفع</span>
+            <span>المجموع</span>
             <span id="total-price">0.00 ر.س</span>
         </div>
 
         <button class="apple-pay-btn" onclick="processFakePayment()">
-            <span style="margin-top: 3px;">Pay with</span> <div class="apple-logo"></div>
+            <span style="margin-top:3px">Pay with</span> <div class="apple-logo"></div>
         </button>
-        
-        <p style="text-align:center; font-size:12px; color:#aaa; margin-top:10px">آمن ومشفر عبر Apple Pay</p>
+        <p style="font-size:11px; color:#aaa; margin-top:10px">Secure Payment by Apple Pay</p>
     </div>
 
     <div id="success-screen" class="success-overlay">
-        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-        </svg>
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
         <h2>تم الدفع بنجاح!</h2>
-        <p>جاري الطباعة الآن...</p>
+        <p>جاري الطباعة...</p>
     </div>
 
-    <script>
-        // 🛑 تم التعديل: السعر 0.20 ريال (يعني 5 صفحات بريال)
-        const PRICE_PER_PAGE = 0.20; 
+    <input type="hidden" role="uploadcare-uploader" id="uploader" data-multiple="false" data-crop="off" />
 
-        // 🛑 رابط السكربت الخاص بك
+    <script>
+        // 🛑 السعر: 20 هللة
+        const PRICE_PER_PAGE = 0.20;
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -103,11 +126,20 @@
         let finalPrice = 0;
         let finalPages = 1;
 
+        // دالة لفتح الودجت عند ضغط المربع
+        function openWidget() {
+            widget.openDialog();
+        }
+
+        // الفتح التلقائي (اختياري، شلته عشان يستمتع بالشكل)
+        // window.addEventListener('load', function() { setTimeout(openWidget, 800); });
+
         widget.onUploadComplete(function(fileInfo) {
             finalFileInfo = fileInfo;
-            document.getElementById('upload-screen').style.display = 'none';
+            // الانتقال للفاتورة
+            document.getElementById('home-screen').style.display = 'none';
             document.getElementById('invoice-screen').style.display = 'block';
-            document.getElementById('file-name').innerText = fileInfo.name.substring(0, 20) + "...";
+            document.getElementById('file-name').innerText = fileInfo.name.length > 15 ? fileInfo.name.substring(0,15)+"..." : fileInfo.name;
 
             if (fileInfo.mimeType === 'application/pdf') {
                 countPdfPages(fileInfo.cdnUrl);
@@ -154,8 +186,5 @@
             });
         }
     </script>
-</body>
-</html>
-
 </body>
 </html>
