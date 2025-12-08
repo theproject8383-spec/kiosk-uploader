@@ -6,7 +6,7 @@
     <title>رفع الملف - طابعتي</title>
     
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 تذكر تغيير المفتاح لاحقاً
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 تذكر مفتاحك
         UPLOADCARE_LOCALE = "ar"; 
         UPLOADCARE_TABS = "file camera"; 
     </script>
@@ -15,85 +15,169 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e9ecef;
+            background-color: #ffffff; /* 💡 طلبك: خلفية بيضاء سادة */
             text-align: center;
-            padding: 20px;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
-        .container-box {
-            background: white; padding: 40px 30px; border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 320px;
-        }
-        .header h2 { color: #2c3e50; margin: 0 0 10px 0; font-size: 24px; }
-        .header p { color: #7f8c8d; margin: 0 0 30px 0; font-size: 16px; }
 
-        /* ستايل الزر (يظهر فقط لو العميل أغلق النافذة التلقائية) */
-        .uploadcare--widget__button_type_open {
-            background: linear-gradient(135deg, #3498db, #8e44ad) !important;
-            color: white !important;
-            border-radius: 50px !important;
-            padding: 15px 35px !important;
-            font-size: 18px !important;
-            font-weight: bold;
-            border: none;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        /* 🐍 حاوية الثعبان (نفس الكشك بس أصغر) */
+        .loader-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(240, 240, 240, 0.3);
+            border-radius: 15px; /* زوايا ناعمة */
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
         }
-        
+
+        /* خطوط الثعبان الأربعة */
+        .loader-wrapper span { position: absolute; display: block; }
+
+        /* 1. فوق */
+        .loader-wrapper span:nth-child(1) {
+            top: 0; left: -100%; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, #3498db);
+            animation: btn-anim1 1.5s linear infinite;
+        }
+        @keyframes btn-anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
+
+        /* 2. يمين */
+        .loader-wrapper span:nth-child(2) {
+            top: -100%; right: 0; width: 3px; height: 100%;
+            background: linear-gradient(180deg, transparent, #3498db);
+            animation: btn-anim2 1.5s linear infinite; animation-delay: 0.375s;
+        }
+        @keyframes btn-anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
+
+        /* 3. تحت */
+        .loader-wrapper span:nth-child(3) {
+            bottom: 0; right: -100%; width: 100%; height: 3px;
+            background: linear-gradient(270deg, transparent, #3498db);
+            animation: btn-anim3 1.5s linear infinite; animation-delay: 0.75s;
+        }
+        @keyframes btn-anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
+
+        /* 4. يسار */
+        .loader-wrapper span:nth-child(4) {
+            bottom: -100%; left: 0; width: 3px; height: 100%;
+            background: linear-gradient(360deg, transparent, #3498db);
+            animation: btn-anim4 1.5s linear infinite; animation-delay: 1.125s;
+        }
+        @keyframes btn-anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
+
+        /* أيقونة السحابة في الوسط */
+        .cloud-icon {
+            width: 50px;
+            height: 50px;
+            fill: #3498db;
+            animation: float 2s ease-in-out infinite;
+        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+
+        h3 { color: #2c3e50; font-size: 18px; margin: 0; font-weight: 600; }
+        p { color: #95a5a6; font-size: 14px; margin-top: 5px; }
+
+        /* إخفاء زر الرفع الافتراضي */
+        .uploadcare--widget__button_type_open { display: none; }
+
+        /* زر إعادة الفتح (يظهر لو العميل سكر النافذة) */
+        .retry-btn {
+            margin-top: 30px;
+            padding: 10px 25px;
+            background: white;
+            border: 1px solid #3498db;
+            color: #3498db;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none; /* مخفي في البداية */
+        }
+
+        /* رسائل الحالة */
         .status-message {
-            margin-top: 25px; padding: 15px; border-radius: 12px; display: none; font-weight: bold; font-size: 14px;
+            margin-top: 20px; padding: 10px 20px; border-radius: 50px; 
+            display: none; font-weight: bold; font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .normal { background-color: #e2e6ea; color: #2c3e50; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .footer-info { margin-top: 30px; font-size: 12px; color: #bdc3c7; }
+        .normal { background-color: #f8f9fa; color: #2c3e50; }
+        .success { background-color: #27ae60; color: white; }
+        .error { background-color: #e74c3c; color: white; }
+        
+        .footer-info { position: absolute; bottom: 20px; font-size: 12px; color: #ecf0f1; }
     </style>
 </head>
 <body>
 
-    <div class="container-box">
-        <div class="header">
-            <h2>🖨️ طابعتي الذكية</h2>
-            <p>اختر ملف PDF أو صورة</p>
-        </div>
-
-        <input type="hidden" role="uploadcare-uploader" id="uploader" data-crop="off" />
-        <div id="status" class="status-message"></div>
+    <div class="loader-wrapper">
+        <span></span><span></span><span></span><span></span>
+        <svg class="cloud-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+        </svg>
     </div>
 
-    <div class="footer-info">رقم الجلسة: <span id="session-debug">--</span></div>
+    <h3>جاري الاتصال...</h3>
+    <p>سيتم فتح نافذة الملفات تلقائياً</p>
+
+    <input type="hidden" role="uploadcare-uploader" id="uploader" data-crop="off" />
+    
+    <div id="status" class="status-message"></div>
+    
+    <button class="retry-btn" onclick="openWidget()">📂 فتح الملفات</button>
+
+    <div class="footer-info">ID: <span id="session-debug">--</span></div>
 
     <script>
-        // 🔴 رابط السكربت الخاص بك (الصحيح)
+        // 🔴 رابط السكربت الخاص بك
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
 
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
-        document.getElementById('session-debug').innerText = sessionId || "غير محدد";
+        document.getElementById('session-debug').innerText = sessionId || "--";
 
         const widget = uploadcare.Widget('[role=uploadcare-uploader]');
 
-        // 🔥 هذا السطر الجديد: يفتح نافذة اختيار الملفات تلقائياً عند الدخول
+        // دالة فتح الودجت
+        function openWidget() {
+            widget.openDialog().done(function() {
+                // إذا العميل قفل النافذة بدون ما يرفع، نظهر زر "إعادة الفتح"
+                document.querySelector('.retry-btn').style.display = 'block';
+                document.querySelector('h3').innerText = "هل ألغيت الرفع؟";
+                document.querySelector('p').innerText = "اضغط الزر أدناه للمحاولة مرة أخرى";
+            });
+        }
+
+        // 🔥 الفتح التلقائي بعد نصف ثانية
         window.addEventListener('load', function() {
-            setTimeout(() => {
-                widget.openDialog();
-            }, 500); // تأخير نصف ثانية لضمان التحميل
+            setTimeout(openWidget, 800); 
         });
 
         widget.onUploadComplete(function(fileInfo) {
-            showStatus("⏳ جاري إرسال الملف للكشك... يرجى الانتظار", "normal");
+            // نخفي الثعبان ونظهر رسالة النجاح
+            document.querySelector('.loader-wrapper').style.display = 'none';
+            document.querySelector('h3').style.display = 'none';
+            document.querySelector('p').style.display = 'none';
+            document.querySelector('.retry-btn').style.display = 'none';
+
+            showStatus("⏳ جاري الإرسال للكشك...", "normal");
+            
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `action=upload_file&session_id=${sessionId}&kiosk_id=${kioskId}&file_uuid=${fileInfo.uuid}&file_url=${fileInfo.cdnUrl}`
             })
-            .then(() => { showStatus("✅ تم الإرسال بنجاح! تابع الشاشة أمامك.", "success"); })
-            .catch(err => { showStatus("❌ حدث خطأ في الاتصال، حاول مرة أخرى.", "error"); });
+            .then(() => { showStatus("✅ تم الإرسال بنجاح!", "success"); })
+            .catch(err => { showStatus("❌ خطأ في الاتصال", "error"); });
         });
 
         function showStatus(text, type) {
