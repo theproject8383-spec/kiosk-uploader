@@ -6,9 +6,9 @@
     <title>خدمة الطباعة الذاتية</title>
     
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; 
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 تذكر تحط مفتاحك الحقيقي هنا
         UPLOADCARE_LOCALE = "ar"; 
-        UPLOADCARE_TABS = "file"; 
+        UPLOADCARE_TABS = "file camera"; // نسمح بالملفات والكاميرا
     </script>
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
     
@@ -18,40 +18,26 @@
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #ffffff; 
-            margin: 0; padding: 20px; 
+            background-color: #ffffff; margin: 0; padding: 20px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             min-height: 100vh; 
         }
 
         /* 1. تصميم شاشة اللودينج (الثعبان) */
-        #loading-screen {
-            display: flex; flex-direction: column; align-items: center; width: 100%;
-        }
-
+        #loading-screen { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .snake-container {
-            position: relative;
-            width: 120px; height: 120px;
+            position: relative; width: 120px; height: 120px;
             display: flex; justify-content: center; align-items: center;
-            background: rgba(245, 245, 245, 0.7);
-            border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            overflow: hidden;
-            margin-bottom: 25px;
+            background: rgba(245, 245, 245, 0.7); border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;
         }
-
         .snake-container span { position: absolute; display: block; }
-        
-        /* تسريع الحركة قليلاً لتعطي شعور بالنشاط */
         .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 1.5s linear infinite; }
         @keyframes anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
-
         .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 1.5s linear infinite; animation-delay: 0.375s; }
         @keyframes anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
-
         .snake-container span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: anim3 1.5s linear infinite; animation-delay: 0.75s; }
         @keyframes anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
-
         .snake-container span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: anim4 1.5s linear infinite; animation-delay: 1.125s; }
         @keyframes anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
 
@@ -62,41 +48,23 @@
         p { margin: 8px 0 0 0; color: #bdc3c7; font-size: 14px; animation: pulse-text 2s infinite; }
         @keyframes pulse-text { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        /* زر إعادة المحاولة (يظهر لو قفل النافذة) */
-        .retry-btn {
-            margin-top: 30px; padding: 10px 25px; background: white; border: 1px solid #3498db; 
-            color: #3498db; border-radius: 50px; cursor: pointer; display: none; font-weight: bold;
-        }
+        .retry-btn { margin-top: 30px; padding: 10px 25px; background: white; border: 1px solid #3498db; color: #3498db; border-radius: 50px; cursor: pointer; display: none; font-weight: bold; }
 
-        /* 2. شاشة الفاتورة (مخفية) */
-        #invoice-screen {
-            display: none; width: 100%; max-width: 350px;
-            background: white; border-radius: 20px; padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
-
+        /* 2. شاشة الفاتورة */
+        #invoice-screen { display: none; width: 100%; max-width: 350px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; font-size: 15px; color: #333; }
         .total { font-weight: bold; font-size: 20px; color: #000; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 20px; }
-
-        .apple-pay-btn {
-            background-color: black; color: white; border-radius: 12px; width: 100%; height: 50px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-            margin-top: 25px; font-size: 18px; font-weight: 500; border: none; gap: 8px;
-        }
+        .apple-pay-btn { background-color: black; color: white; border-radius: 12px; width: 100%; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-top: 25px; font-size: 18px; font-weight: 500; border: none; gap: 8px; }
         .apple-logo { width: 45px; height: 100%; background-image: url("https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg"); background-repeat: no-repeat; background-position: center; background-size: contain; }
 
-        /* 3. شاشة النجاح (مخفية) */
-        #success-screen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* 3. شاشة النجاح */
+        #success-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
         .checkmark { width: 80px; height: 80px; border-radius: 50%; display: block; stroke-width: 2; stroke: #4bb71b; stroke-miterlimit: 10; margin-bottom: 20px; box-shadow: inset 0px 0px 0px #4bb71b; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
         .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #4bb71b; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
         .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
         .uploadcare--widget__button_type_open { display: none !important; }
-
     </style>
 </head>
 <body>
@@ -108,7 +76,6 @@
         </div>
         <h2 id="status-text">جاري الاتصال بالنظام...</h2>
         <p id="sub-status-text">سيتم فتح نافذة الملفات تلقائياً</p>
-
         <button class="retry-btn" onclick="openWidget()">📂 اختر ملف للطباعة</button>
     </div>
 
@@ -117,12 +84,7 @@
         <div class="row"><span>اسم الملف</span><span id="file-name" style="direction:ltr">...</span></div>
         <div class="row"><span>عدد الصفحات</span><span id="page-count">جاري الحساب...</span></div>
         <div class="row"><span>سعر الصفحة</span><span>0.20 ر.س</span></div>
-        
-        <div class="row total">
-            <span>المجموع</span>
-            <span id="total-price">0.00 ر.س</span>
-        </div>
-
+        <div class="row total"><span>المجموع</span><span id="total-price">0.00 ر.س</span></div>
         <button class="apple-pay-btn" onclick="processPayment()">
             <span style="margin-top:4px">Pay with</span> <div class="apple-logo"></div>
         </button>
@@ -134,7 +96,15 @@
         <p>جاري الطباعة...</p>
     </div>
 
-    <input type="hidden" role="uploadcare-uploader" id="uploader" data-multiple="false" data-crop="off" />
+    <input 
+        type="hidden" 
+        role="uploadcare-uploader" 
+        id="uploader" 
+        data-multiple="false" 
+        data-crop="off" 
+        data-images-only="false" 
+        data-input-accept-types="application/pdf, image/*"
+    />
 
     <script>
         const PRICE_PER_PAGE = 0.20; 
@@ -149,27 +119,22 @@
         let finalPrice = 0;
         let finalPages = 1;
 
-        // دالة لفتح الودجت
         function openWidget() {
             widget.openDialog().done(function() {
-                // هذا الكود يشتغل إذا العميل سكر النافذة بدون ما يرفع شي
                 document.querySelector('.retry-btn').style.display = 'block';
                 document.getElementById('status-text').innerText = "بانتظار اختيار الملف";
                 document.getElementById('sub-status-text').style.display = 'none';
             });
         }
 
-        // 🔥 الفتح التلقائي: انتظر 1.5 ثانية (عشان يشوف اللودينج) ثم افتح
         window.addEventListener('load', function() {
             setTimeout(openWidget, 1500);
         });
 
         widget.onUploadComplete(function(fileInfo) {
             finalFileInfo = fileInfo;
-            
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('invoice-screen').style.display = 'block';
-            
             let name = fileInfo.name;
             if(name.length > 20) name = name.substring(0, 18) + "...";
             document.getElementById('file-name').innerText = name;
@@ -220,5 +185,4 @@
         }
     </script>
 </body>
-</html>
 </html>
