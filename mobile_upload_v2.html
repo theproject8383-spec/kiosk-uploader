@@ -8,8 +8,6 @@
     <script>
         // 1️⃣ إعدادات Cloudinary
         const CLOUD_NAME = "duyei6hrk"; 
-        
-        // 2️⃣ 🔴 ضع اسم البريسيت القصير هنا (تأكد أنه Unsigned)
         const UPLOAD_PRESET = "Kioskxxx"; 
     </script>
 
@@ -25,111 +23,111 @@
             min-height: 100vh; 
         }
 
-        /* 1. شاشة الثعبان (سريعة جداً الآن) */
+        /* 1. تصميم الثعبان */
         #loading-screen { display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s; }
         .snake-container {
-            position: relative; width: 100px; height: 100px; /* صغرتها شوي */
+            position: relative; width: 140px; height: 140px; 
             display: flex; justify-content: center; align-items: center;
-            background: rgba(245, 245, 245, 0.7); border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px;
+            background: rgba(245, 245, 245, 0.7); border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 30px;
+            cursor: pointer;
         }
         .snake-container span { position: absolute; display: block; }
-        
-        /* حركة أسرع */
-        .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 1s linear infinite; }
+        .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 1.5s linear infinite; }
         @keyframes anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
-        .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 1s linear infinite; animation-delay: 0.25s; }
+        .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 1.5s linear infinite; animation-delay: 0.375s; }
         @keyframes anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
-        .snake-container span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: anim3 1s linear infinite; animation-delay: 0.5s; }
+        .snake-container span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: anim3 1.5s linear infinite; animation-delay: 0.75s; }
         @keyframes anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
-        .snake-container span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: anim4 1s linear infinite; animation-delay: 0.75s; }
+        .snake-container span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: anim4 1.5s linear infinite; animation-delay: 1.125s; }
         @keyframes anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
 
-        .cloud-icon { width: 40px; height: 40px; fill: #3498db; animation: float 1.5s ease-in-out infinite; }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-4px); } 100% { transform: translateY(0px); } }
+        .cloud-icon { width: 60px; height: 60px; fill: #3498db; animation: float 2.5s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
 
-        h2 { margin: 0; color: #2c3e50; font-size: 18px; font-weight: 600; }
-        p { margin: 5px 0 0 0; color: #bdc3c7; font-size: 13px; }
+        h2 { margin: 0; color: #2c3e50; font-size: 20px; font-weight: 600; }
+        p { margin: 10px 0 0 0; color: #bdc3c7; font-size: 14px; animation: pulse-text 2s infinite; }
+        @keyframes pulse-text { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        .retry-btn { margin-top: 20px; padding: 8px 20px; background: white; border: 1px solid #3498db; color: #3498db; border-radius: 50px; cursor: pointer; display: none; font-size: 14px; font-weight: bold; }
+        .retry-btn { margin-top: 30px; padding: 10px 25px; background: white; border: 1px solid #3498db; color: #3498db; border-radius: 50px; cursor: pointer; display: none; font-weight: bold; }
 
-        /* 2. شاشة التحليل (Analyzing) */
+        /* 2. شاشة التحليل */
         #analyzing-screen { display: none; text-align: center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 3. شاشة الفاتورة */
-        #invoice-screen { display: none; width: 100%; max-width: 350px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #invoice-screen { display: none; width: 100%; max-width: 350px; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        
+        .file-box { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .file-name { font-size: 14px; color: #333; font-weight: bold; }
+        
+        /* زر المعاينة الجديد */
+        .preview-btn {
+            background: none; border: 1px solid #3498db; color: #3498db; 
+            padding: 5px 12px; border-radius: 15px; font-size: 12px; cursor: pointer; text-decoration: none;
+        }
+        .preview-btn:hover { background: #3498db; color: white; }
 
-        .file-preview-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
-        .file-icon-large { font-size: 30px; }
-        .file-info h4 { margin: 0; font-size: 14px; color: #333; }
-        .file-info span { font-size: 12px; color: #7f8c8d; }
-        .view-link { font-size: 12px; color: #3498db; text-decoration: none; display: block; margin-top: 4px; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; font-size: 15px; color: #333; }
+        .total { font-weight: bold; font-size: 20px; color: #000; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 20px; }
 
-        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333; }
-        .total { font-weight: bold; font-size: 18px; color: #000; margin-top: 10px; border-top: 2px dashed #eee; padding-top: 15px; }
+        /* حقل تعديل الصفحات */
+        .page-input { width: 50px; text-align: center; font-size: 16px; border: 1px solid #ddd; border-radius: 5px; padding: 5px; }
 
-        .apple-pay-btn { background-color: black; color: white; border-radius: 12px; width: 100%; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-top: 25px; font-size: 18px; font-weight: 500; border: none; gap: 8px; transition: transform 0.1s; }
-        .apple-pay-btn:active { transform: scale(0.98); }
+        .apple-pay-btn { background-color: black; color: white; border-radius: 12px; width: 100%; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-top: 25px; font-size: 18px; font-weight: 500; border: none; gap: 8px; }
         .apple-logo { width: 45px; height: 100%; background-image: url("https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg"); background-repeat: no-repeat; background-position: center; background-size: contain; }
 
-        /* 4. شاشة النجاح */
+        /* 4. النجاح */
         #success-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
         .checkmark { width: 80px; height: 80px; border-radius: 50%; display: block; stroke-width: 2; stroke: #4bb71b; stroke-miterlimit: 10; margin-bottom: 20px; box-shadow: inset 0px 0px 0px #4bb71b; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
         .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #4bb71b; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
         .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
-        <div class="snake-container">
+        <div class="snake-container" onclick="openWidget()">
             <span></span><span></span><span></span><span></span>
             <svg class="cloud-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
         </div>
-        <h2 id="status-text">جاري التحضير...</h2>
-        <button class="retry-btn" onclick="openWidget()">📂 فتح الملفات</button>
+        <h2 id="status-text">جاري الاتصال بالنظام...</h2>
+        <p>سيتم فتح نافذة الملفات تلقائياً</p>
+        <button class="retry-btn" onclick="openWidget()">📂 فتح نافذة الرفع</button>
     </div>
 
     <div id="analyzing-screen">
         <div class="spinner"></div>
         <h3>جاري تحليل الملف...</h3>
-        <p>يتم حساب عدد الصفحات بدقة</p>
     </div>
 
     <div id="invoice-screen">
-        <h3 style="margin-top:0; text-align:center; margin-bottom: 20px;">مراجعة الطلب</h3>
+        <h3 style="margin-top:0; text-align:center">ملخص الطلب</h3>
         
-        <div class="file-preview-box">
-            <div class="file-icon-large">📄</div>
-            <div class="file-info">
-                <h4 id="file-name">...</h4>
-                <a id="view-file-link" href="#" target="_blank" class="view-link">👁️ معاينة الملف</a>
-            </div>
+        <div class="file-box">
+            <span id="file-name" class="file-name">...</span>
+            <a id="preview-link" href="#" target="_blank" class="preview-btn">👁️ معاينة</a>
         </div>
 
-        <div class="row"><span>عدد الصفحات المحسوب</span><span id="page-count" style="font-weight:bold; color:#2c3e50">...</span></div>
-        <div class="row"><span>سعر الصفحة</span><span>0.20 ر.س</span></div>
-        
-        <div class="row total">
-            <span>الإجمالي للدفع</span>
-            <span id="total-price">0.00 ر.س</span>
+        <div class="row">
+            <span>عدد الصفحات</span>
+            <input type="number" id="page-count-input" class="page-input" value="1" min="1" onchange="manualUpdate()">
         </div>
+        
+        <div class="row"><span>سعر الصفحة</span><span>0.20 ر.س</span></div>
+        <div class="row total"><span>المجموع</span><span id="total-price">0.20 ر.س</span></div>
 
         <button class="apple-pay-btn" onclick="processPayment()">
             <span style="margin-top:4px">Pay with</span> <div class="apple-logo"></div>
         </button>
-        <p style="text-align:center; font-size:11px; color:#aaa; margin-top:10px">تأكد من التفاصيل قبل الدفع</p>
     </div>
 
     <div id="success-screen">
         <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
         <h2>تم الدفع بنجاح!</h2>
-        <p>جاري إرسال الملف للكشك...</p>
+        <p>جاري الطباعة...</p>
     </div>
 
     <script>
@@ -141,7 +139,6 @@
         const kioskId = urlParams.get('kiosk_id');
 
         let finalFileInfo = null;
-        let finalPrice = 0;
         let finalPages = 1;
         let myWidget;
 
@@ -158,9 +155,7 @@
                 maxFileSize: 50000000, 
                 language: "ar", 
                 text: { "ar": { "or": "أو", "browse": "تصفح الملفات", "menu": { "files": "ملفاتي" } } },
-                styles: {
-                    palette: { window: "#FFFFFF", windowBorder: "#90A0B3", tabIcon: "#0078FF", menuIcons: "#5A616A", textDark: "#000000", textLight: "#FFFFFF", link: "#0078FF", action: "#FF620C", inactiveTabIcon: "#0E2F5A", error: "#F44235", inProgress: "#0078FF", complete: "#20B832", sourceBg: "#E4EBF1" }
-                }
+                styles: { palette: { window: "#FFFFFF", windowBorder: "#90A0B3", tabIcon: "#0078FF", menuIcons: "#5A616A", textDark: "#000000", textLight: "#FFFFFF", link: "#0078FF", action: "#FF620C", inactiveTabIcon: "#0E2F5A", error: "#F44235", inProgress: "#0078FF", complete: "#20B832", sourceBg: "#E4EBF1" } }
             }, (error, result) => { 
                 if (!error && result && result.event === "success") { 
                     handleUploadSuccess(result.info);
@@ -169,7 +164,6 @@
             myWidget.open();
         }
 
-        // معالجة الملف بعد الرفع
         function handleUploadSuccess(fileInfo) {
             finalFileInfo = {
                 name: fileInfo.original_filename + "." + fileInfo.format,
@@ -177,59 +171,60 @@
                 cdnUrl: fileInfo.secure_url
             };
 
-            // إخفاء الشاشة الرئيسية وإظهار شاشة "جاري التحليل"
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('analyzing-screen').style.display = 'block';
 
-            // إذا كان PDF نعد الصفحات بطريقة متقدمة
+            let name = finalFileInfo.name;
+            if(name.length > 20) name = name.substring(0, 18) + "...";
+            document.getElementById('file-name').innerText = name;
+            
+            // تفعيل زر المعاينة
+            document.getElementById('preview-link').href = finalFileInfo.cdnUrl;
+
             if (fileInfo.format === 'pdf') {
                 countPdfPages(fileInfo.secure_url);
             } else {
-                // الصور صفحة واحدة
-                showInvoice(1);
+                finishAnalysis(1);
             }
         }
 
-        // دالة متقدمة لعد الصفحات (تحميل الملف كـ Blob لتجاوز مشاكل الأمان)
+        // دالة العد المتقدمة (تكسر الحماية عبر fetch)
         async function countPdfPages(url) {
             try {
-                // 1. تحميل الملف كبيانات (Blob)
-                const response = await fetch(url);
+                // نضيف طابع زمني لمنع الكاش
+                const corsUrl = url + "?t=" + new Date().getTime();
+                const response = await fetch(corsUrl);
                 const blob = await response.blob();
                 const arrayBuffer = await blob.arrayBuffer();
-
-                // 2. قراءة الصفحات من البيانات
+                
                 const loadingTask = pdfjsLib.getDocument(arrayBuffer);
                 const pdf = await loadingTask.promise;
-                showInvoice(pdf.numPages);
-
+                finishAnalysis(pdf.numPages);
             } catch (error) {
-                console.error("خطأ في عد الصفحات:", error);
-                // في حال الفشل التام، نعتبرها صفحة واحدة (احتياط)
-                showInvoice(1);
+                console.log("Error counting:", error);
+                // إذا فشل العد، حط 1 وافتح المجال للعميل يعدل
+                finishAnalysis(1);
             }
         }
 
-        // عرض الفاتورة بعد الحساب
-        function showInvoice(pages) {
-            finalPages = pages;
-            finalPrice = (pages * PRICE_PER_PAGE).toFixed(2);
-
-            // إخفاء التحليل وإظهار الفاتورة
+        function finishAnalysis(pages) {
             document.getElementById('analyzing-screen').style.display = 'none';
             document.getElementById('invoice-screen').style.display = 'block';
-
-            // تعبئة البيانات
-            let name = finalFileInfo.name;
-            if(name.length > 25) name = name.substring(0, 22) + "...";
-            document.getElementById('file-name').innerText = name;
-            document.getElementById('view-file-link').href = finalFileInfo.cdnUrl; // رابط المعاينة
             
-            document.getElementById('page-count').innerText = pages + (pages > 10 ? " ⚠️" : ""); // تنبيه خفيف لو الصفحات كثيرة
-            document.getElementById('total-price').innerText = finalPrice + " ر.س";
+            // تحديث الحقول
+            document.getElementById('page-count-input').value = pages;
+            manualUpdate(); // لحساب السعر
         }
 
-        // المحاكاة للدفع
+        // دالة التحديث اليدوي (لو العميل غير الرقم)
+        function manualUpdate() {
+            let pages = document.getElementById('page-count-input').value;
+            if(pages < 1) pages = 1;
+            finalPages = pages;
+            let price = (pages * PRICE_PER_PAGE).toFixed(2);
+            document.getElementById('total-price').innerText = price + " ر.س";
+        }
+
         function processPayment() {
             const btn = document.querySelector('.apple-pay-btn');
             btn.innerHTML = "Processing...";
@@ -244,6 +239,7 @@
         }
 
         function sendToKiosk() {
+            let finalPrice = (finalPages * PRICE_PER_PAGE).toFixed(2);
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -251,9 +247,8 @@
             });
         }
 
-        // فتح الودجت بسرعة (نصف ثانية فقط)
         window.addEventListener('load', function() {
-            setTimeout(openWidget, 500);
+            setTimeout(openWidget, 1000);
         });
     </script>
 </body>
