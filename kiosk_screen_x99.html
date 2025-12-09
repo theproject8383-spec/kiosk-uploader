@@ -7,9 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; text-align: center; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        
         .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 600px; width: 80%; position: relative; z-index: 2; }
-
+        
         .device-badge { position: absolute; top: 20px; left: 20px; background-color: #eef2f7; color: #2c3e50; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 14px; border: 1px solid #dce4ec; display: flex; align-items: center; gap: 5px; }
         .status-dot { width: 8px; height: 8px; background-color: #27ae60; border-radius: 50%; display: inline-block; }
 
@@ -36,11 +35,12 @@
         .qr-wrapper span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: btn-anim4 2s linear infinite; animation-delay: 1.5s; }
         @keyframes btn-anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
 
-        /* 🟢 حالة النجاح (تغيير اللون فقط بدون تغيير الشكل) */
+        /* 🟢 حالة النجاح (تلوين الخطوط بالأخضر مع الحفاظ على الاتجاهات) */
         .qr-wrapper.success span:nth-child(1) { background: linear-gradient(90deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(2) { background: linear-gradient(180deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(3) { background: linear-gradient(270deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(4) { background: linear-gradient(360deg, transparent, #27ae60); }
+        .qr-wrapper.success span { animation-duration: 0.5s; } /* تسريع الحركة */
 
         #qrcode { padding: 15px; background: white; z-index: 1; border: 1px solid #eee; }
         .dots::after { content: ' .'; animation: dots-move 2s steps(4, end) infinite; }
@@ -74,7 +74,7 @@
         // ============================================================
         const KIOSK_NUMBER = "01"; 
         
-        // 🛑 إعدادات Cloudinary (مهمة جداً للطباعة)
+        // 🛑 اسم السحابة الجديد (مهم جداً)
         const CLOUD_NAME = "duyei6hrk"; 
         
         const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html"; 
@@ -102,18 +102,17 @@
                     document.querySelector('.status-text').innerText = "تم الاستلام! جاري الطباعة...";
                     document.querySelector('.status-text').style.color = "#27ae60"; 
                     
-                    // ✅ تحويل الثعبان للأخضر (بدون تخريب الشكل)
+                    // تشغيل الثعبان الأخضر
                     document.getElementById('snake-box').classList.add('success');
 
-                    // 🛠️ هنا كان الخطأ: بناء رابط Cloudinary الصحيح
+                    // 🛠️ هنا التعديل المهم: بناء رابط Cloudinary الصحيح
                     // بدلاً من uploadcare القديم، نستخدم رابطك الجديد
                     let fileUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${data.file_uuid}`;
                     
-                    // إضافة .pdf في النهاية عشان المتصفح يفهم إنه ملف طباعة
-                    // (Cloudinary ذكي، لو الملف صورة وحطيت .pdf بيحوله لـ PDF تلقائي!)
+                    // إضافة .pdf في النهاية عشان المتصفح يطبعه كوثيقة
                     fileUrl += ".pdf";
 
-                    console.log("Printing URL:", fileUrl); // للمراقبة
+                    console.log("Printing URL:", fileUrl); 
                     printFile(fileUrl);
                 }
             }).catch(error => console.log("Waiting..."));
@@ -128,10 +127,9 @@
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
                     
-                    // الانتقال لصفحة "جاري الطباعة"
                     setTimeout(() => { 
                         window.location.href = PRINTING_PAGE_NAME; 
-                    }, 3000);
+                    }, 5000);
                 }, 1000);
             };
         }
