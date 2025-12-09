@@ -7,49 +7,40 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; text-align: center; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        
         .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 600px; width: 80%; position: relative; z-index: 2; }
-
+        
         .device-badge { position: absolute; top: 20px; left: 20px; background-color: #eef2f7; color: #2c3e50; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 14px; border: 1px solid #dce4ec; display: flex; align-items: center; gap: 5px; }
         .status-dot { width: 8px; height: 8px; background-color: #27ae60; border-radius: 50%; display: inline-block; }
 
         h1 { color: #2c3e50; margin-bottom: 5px; margin-top: 10px; }
         .status-text { color: #7f8c8d; font-size: 18px; margin-bottom: 30px; font-weight: 500; }
 
-        /* تصميم الثعبان */
+        /* 🐍 تصميم الثعبان (الأصلي) */
         .qr-wrapper { position: relative; width: 260px; height: 260px; margin: 0 auto 20px auto; display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.1); overflow: hidden; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         .qr-wrapper span { position: absolute; display: block; }
+        
+        /* الحركات الأصلية */
         .qr-wrapper span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: btn-anim1 2s linear infinite; }
         @keyframes btn-anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
         .qr-wrapper span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: btn-anim2 2s linear infinite; animation-delay: 0.5s; }
-        @keyframes anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
+        @keyframes btn-anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
         .qr-wrapper span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: btn-anim3 2s linear infinite; animation-delay: 1s; }
-        @keyframes anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
+        @keyframes btn-anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
         .qr-wrapper span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: btn-anim4 2s linear infinite; animation-delay: 1.5s; }
-        @keyframes anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
+        @keyframes btn-anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
 
-        /* الثعبان الأخضر */
+        /* 🟢 حالة النجاح (تعديل اللون فقط بدقة) */
         .qr-wrapper.success span:nth-child(1) { background: linear-gradient(90deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(2) { background: linear-gradient(180deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(3) { background: linear-gradient(270deg, transparent, #27ae60); }
         .qr-wrapper.success span:nth-child(4) { background: linear-gradient(360deg, transparent, #27ae60); }
-        .qr-wrapper.success span { animation-duration: 0.5s; }
 
         #qrcode { padding: 15px; background: white; z-index: 1; border: 1px solid #eee; }
         .session-info { font-size: 14px; color: #bdc3c7; margin-top: 20px; }
         .refresh-btn { margin-top: 20px; background: #ecf0f1; border: none; padding: 8px 20px; border-radius: 5px; color: #7f8c8d; cursor: pointer; font-weight: bold; }
 
-        /* 🛑 إطار الطباعة (جعلته ظاهراً للتجربة) */
-        /* بعد ما يضبط معك، رجع visibility إلى hidden */
-        #print-frame { 
-            position: absolute; 
-            bottom: 10px; right: 10px; 
-            width: 300px; height: 300px; 
-            border: 5px solid red; /* حدود حمراء عشان تشوفه */
-            background: white;
-            z-index: 9999;
-            display: none; /* مخفي مبدئياً */
-        }
+        /* إطار الطباعة المخفي */
+        #print-frame { position: absolute; width: 0; height: 0; border: 0; visibility: hidden; }
     </style>
 </head>
 <body>
@@ -72,6 +63,8 @@
 
     <script>
         const KIOSK_NUMBER = "01"; 
+        const CLOUD_NAME = "duyei6hrk"; 
+        
         const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html"; 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
         const PRINTING_PAGE_NAME = "status_printing_z88.html";
@@ -92,20 +85,26 @@
                 if (data.status === "found") {
                     clearInterval(pollingTimer);
                     
-                    document.querySelector('.status-text').innerText = "تم الاستلام! جاري التحضير...";
+                    document.querySelector('.status-text').innerText = "تم الاستلام! جاري الطباعة...";
                     document.querySelector('.status-text').style.color = "#27ae60"; 
+                    
+                    // تفعيل الثعبان الأخضر
                     document.getElementById('snake-box').classList.add('success');
 
-                    // 🛑 استخدام الرابط الأصلي من السيرفر (أضمن طريقة)
+                    // 🛠️ حل مشكلة 404: تصحيح الرابط
                     let fileUrl = data.file_url;
                     
-                    // تحويل الصور إلى PDF عبر رابط كلاوديناري لضمان الطباعة
-                    // نبحث عن الامتداد في نهاية الرابط ونستبدله بـ .pdf
-                    if (fileUrl) {
-                        fileUrl = fileUrl.replace(/\.[^/.]+$/, ".pdf");
+                    // إذا الرابط لا يبدأ بـ http (يعني جاي كرقم ملف فقط)، نركبه صح
+                    if (!fileUrl || !fileUrl.startsWith('http')) {
+                        fileUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${data.file_uuid}`;
+                    }
+                    
+                    // إضافة .pdf في النهاية لضمان الطباعة
+                    if (!fileUrl.toLowerCase().endsWith('.pdf')) {
+                        fileUrl += ".pdf";
                     }
 
-                    console.log("Printing URL:", fileUrl); 
+                    console.log("Final Printing URL:", fileUrl); 
                     startPrinting(fileUrl);
                 }
             }).catch(error => console.log("Waiting..."));
@@ -113,9 +112,6 @@
 
         function startPrinting(fileUrl) {
             const iframe = document.getElementById('print-frame');
-            
-            // 🛑 إظهار الإطار عشان نشوف وش يصير
-            iframe.style.display = 'block'; 
             iframe.src = fileUrl;
 
             iframe.onload = function() {
@@ -125,8 +121,8 @@
                     
                     setTimeout(() => { 
                         window.location.href = PRINTING_PAGE_NAME; 
-                    }, 6000);
-                }, 1500);
+                    }, 5000);
+                }, 1000);
             };
         }
     </script>
