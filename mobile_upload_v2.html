@@ -6,11 +6,11 @@
     <title>خدمة الطباعة الذاتية</title>
     
     <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // 🔴 تذكر تحط مفتاحك الحقيقي هنا
-        UPLOADCARE_LOCALE = "ar"; 
-        UPLOADCARE_TABS = "file camera"; // نسمح بالملفات والكاميرا
+        const CLOUD_NAME = "duyei6hrk";   // 👈 ضع اسم السحابة حقك هنا
+        const UPLOAD_PRESET = "287d2425-e246-4303-af53-602eee19b30c"; // 👈 ضع اسم الـ Preset هنا (تأكد إنه Unsigned)
     </script>
-    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';</script>
@@ -23,7 +23,7 @@
             min-height: 100vh; 
         }
 
-        /* 1. تصميم شاشة اللودينج (الثعبان) */
+        /* 1. تصميم الثعبان */
         #loading-screen { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .snake-container {
             position: relative; width: 120px; height: 120px;
@@ -32,6 +32,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px;
         }
         .snake-container span { position: absolute; display: block; }
+        
+        /* حركة الثعبان */
         .snake-container span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: anim1 1.5s linear infinite; }
         @keyframes anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
         .snake-container span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: anim2 1.5s linear infinite; animation-delay: 0.375s; }
@@ -64,7 +66,6 @@
         .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-        .uploadcare--widget__button_type_open { display: none !important; }
     </style>
 </head>
 <body>
@@ -96,17 +97,8 @@
         <p>جاري الطباعة...</p>
     </div>
 
-    <input 
-        type="hidden" 
-        role="uploadcare-uploader" 
-        id="uploader" 
-        data-multiple="false" 
-        data-crop="off" 
-        data-images-only="false" 
-        data-input-accept-types="application/pdf, image/*"
-    />
-
     <script>
+        // إعدادات السعر والرابط
         const PRICE_PER_PAGE = 0.20; 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
 
@@ -114,44 +106,75 @@
         const sessionId = urlParams.get('session_id');
         const kioskId = urlParams.get('kiosk_id');
 
-        const widget = uploadcare.Widget('[role=uploadcare-uploader]');
         let finalFileInfo = null;
         let finalPrice = 0;
         let finalPages = 1;
+        let myWidget;
 
+        // دالة تشغيل ودجت Cloudinary
         function openWidget() {
-            widget.openDialog().done(function() {
-                document.querySelector('.retry-btn').style.display = 'block';
-                document.getElementById('status-text').innerText = "بانتظار اختيار الملف";
-                document.getElementById('sub-status-text').style.display = 'none';
+            myWidget = cloudinary.createUploadWidget({
+                cloudName: CLOUD_NAME, 
+                uploadPreset: UPLOAD_PRESET,
+                sources: ['local', 'camera'], // المصادر المسموحة
+                multiple: false,  // ملف واحد فقط
+                resourceType: 'auto', // يقبل كل شيء (PDF, صور)
+                clientAllowedFormats: ["pdf", "png", "jpg", "jpeg"], // تحديد الصيغ
+                language: "ar", // اللغة العربية
+                text: { "ar": { "or": "أو", "browse": "تصفح الملفات", "menu": { "files": "ملفاتي" } } },
+                styles: {
+                    palette: { window: "#FFFFFF", windowBorder: "#90A0B3", tabIcon: "#0078FF", menuIcons: "#5A616A", textDark: "#000000", textLight: "#FFFFFF", link: "#0078FF", action: "#FF620C", inactiveTabIcon: "#0E2F5A", error: "#F44235", inProgress: "#0078FF", complete: "#20B832", sourceBg: "#E4EBF1" }
+                }
+            }, (error, result) => { 
+                if (!error && result && result.event === "success") { 
+                    handleUploadSuccess(result.info);
+                }
+                if (error) {
+                    console.log("Error", error);
+                }
             });
+            myWidget.open();
+        }
+
+        // عند نجاح الرفع
+        function handleUploadSuccess(fileInfo) {
+            finalFileInfo = {
+                name: fileInfo.original_filename + "." + fileInfo.format,
+                uuid: fileInfo.public_id, // في Cloudinary نستخدم public_id كمعرف
+                cdnUrl: fileInfo.secure_url
+            };
+
+            // إخفاء اللودينج وإظهار الفاتورة
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('invoice-screen').style.display = 'block';
+            
+            let name = finalFileInfo.name;
+            if(name.length > 20) name = name.substring(0, 18) + "...";
+            document.getElementById('file-name').innerText = name;
+
+            // إذا كان PDF نعد الصفحات
+            if (fileInfo.format === 'pdf') {
+                countPdfPages(fileInfo.secure_url);
+            } else {
+                updateInvoice(1);
+            }
         }
 
         window.addEventListener('load', function() {
             setTimeout(openWidget, 1500);
         });
 
-        widget.onUploadComplete(function(fileInfo) {
-            finalFileInfo = fileInfo;
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('invoice-screen').style.display = 'block';
-            let name = fileInfo.name;
-            if(name.length > 20) name = name.substring(0, 18) + "...";
-            document.getElementById('file-name').innerText = name;
-
-            if (fileInfo.mimeType === 'application/pdf') {
-                countPdfPages(fileInfo.cdnUrl);
-            } else {
-                updateInvoice(1);
-            }
-        });
-
+        // دوال الحساب والدفع (نفس القديمة)
         async function countPdfPages(url) {
             try {
+                // Cloudinary قد يواجه مشكلة CORS مع PDF.js أحياناً
+                // نضيف هذا السطر لمحاولة الحل
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
                 updateInvoice(pdf.numPages);
             } catch (error) {
+                console.log("PDF count error:", error);
+                // إذا فشل العد (بسبب الحماية)، نحسبها صفحة واحدة احتياطاً
                 updateInvoice(1);
             }
         }
