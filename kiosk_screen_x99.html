@@ -15,7 +15,7 @@
         h1 { color: #2c3e50; margin-bottom: 5px; margin-top: 10px; }
         .status-text { color: #7f8c8d; font-size: 18px; margin-bottom: 30px; font-weight: 500; }
 
-        /* 🐍 تصميم الثعبان (حقك الأصلي - لم يتم لمسه) */
+        /* 🐍 تصميم الثعبان */
         .qr-wrapper { position: relative; width: 260px; height: 260px; margin: 0 auto 20px auto; display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.1); overflow: hidden; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         .qr-wrapper span { position: absolute; display: block; }
         
@@ -34,7 +34,6 @@
         .session-info { font-size: 14px; color: #bdc3c7; margin-top: 20px; }
         .refresh-btn { margin-top: 20px; background: #ecf0f1; border: none; padding: 8px 20px; border-radius: 5px; color: #7f8c8d; cursor: pointer; font-weight: bold; }
         
-        /* فريم الطباعة المخفي */
         #print-frame { position: absolute; width: 0; height: 0; border: 0; visibility: hidden; }
     </style>
 </head>
@@ -59,22 +58,19 @@
     <script>
         // ============================================================
         const KIOSK_NUMBER = "01"; 
-        
-        // 🛑 أضفنا اسم السحابة عشان نركب الرابط صح
         const CLOUD_NAME = "duyei6hrk"; 
-        
         const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html"; 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
-        const PRINTING_PAGE_NAME = "status_printing_z88.html";
+        
+        // ✅ تم تصحيح اسم الصفحة هنا
+        const PRINTING_PAGE_NAME = "status_z88_printing.html";
         // ============================================================
 
         document.getElementById("device-id-display").innerText = KIOSK_NUMBER;
         
-        // 1️⃣ هذا هو كود الجلسة (عمرها 10 دقايق)
         const sessionId = Math.floor(Math.random() * 1000000);
         document.getElementById("session-display").innerText = sessionId;
 
-        // ⏰ هذا المؤقت: بعد 10 دقايق (600,000 مللي ثانية) يحدث الصفحة عشان يغير الجلسة
         setTimeout(() => {
             window.location.reload();
         }, 600000);
@@ -85,7 +81,6 @@
         let pollingTimer = setInterval(checkForFile, 3000);
 
         function checkForFile() {
-            // نرسل رقم الجلسة، والسيرفر يقارنه ويعطينا الملف الصحيح فقط
             fetch(`${GOOGLE_SCRIPT_URL}?action=check_file&session_id=${sessionId}&kiosk_id=${KIOSK_NUMBER}`)
             .then(response => response.json())
             .then(data => {
@@ -95,30 +90,26 @@
                     document.querySelector('.status-text').innerText = "تم الاستلام! جاري التحضير...";
                     document.querySelector('.status-text').style.color = "#27ae60"; 
                     
-                    // تغيير لون الثعبان للأخضر (نفس طريقتك القديمة)
                     document.querySelectorAll('.qr-wrapper span').forEach(span => { 
                         span.style.background = 'linear-gradient(90deg, transparent, #27ae60)'; 
                         span.style.animationDuration = '0.5s'; 
                     });
 
-                    // 🛑 هنا التصحيح: تركيب رابط Cloudinary بدلاً من Uploadcare
-                    // data.file_uuid هو اسم الملف في السحابة
                     let correctFileUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${data.file_uuid}.pdf`;
                     
-                    console.log("Printing: ", correctFileUrl); // عشان نتأكد
+                    console.log("Printing: ", correctFileUrl); 
                     printFile(correctFileUrl);
                 }
             }).catch(error => console.log("Waiting..."));
         }
 
-        // 🛑 التغيير الوحيد هنا: الطباعة باستخدام Blob عشان تشتغل محلي
         function printFile(url) {
             document.querySelector('.status-text').innerText = "جاري سحب الملف للطباعة...";
             
             fetch(url)
-            .then(response => response.blob()) // نحول الملف لبيانات خام (Blob)
+            .then(response => response.blob()) 
             .then(blob => {
-                const blobUrl = URL.createObjectURL(blob); // ننشئ رابط مؤقت
+                const blobUrl = URL.createObjectURL(blob); 
                 const iframe = document.getElementById('print-frame');
                 iframe.src = blobUrl;
 
@@ -127,8 +118,7 @@
                         iframe.contentWindow.focus();
                         iframe.contentWindow.print();
                         
-                        // الانتقال لصفحة "جاري الطباعة" (هذا ينهي الجلسة الحالية)
-                        // خليت الوقت أطول شوي عشان يمديك تشوف الطباعة قبل ما ينتقل
+                        // الانتقال لصفحة "جاري الطباعة"
                         setTimeout(() => { window.location.href = PRINTING_PAGE_NAME; }, 5000);
                     }, 1000);
                 };
