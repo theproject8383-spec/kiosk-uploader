@@ -3,138 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خدمة الطباعة الذاتية</title>
+    <title>Kiosk Print Service</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; text-align: center; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 600px; width: 80%; position: relative; z-index: 2; }
+        body {
+            margin: 0; padding: 0;
+            background: #111;
+            color: #fff;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            background: #222;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        h1 { margin: 0 0 20px; color: #03e9f4; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* 🐍 تصميم الثعبان الأصلي (النيون) */
+        .qr-box {
+            position: relative;
+            display: inline-block;
+            padding: 20px;
+            overflow: hidden;
+            background: #fff; /* خلفية بيضاء للباركود */
+            border-radius: 5px;
+        }
+
+        /* الخطوط الأربعة المتحركة */
+        .line { position: absolute; display: block; }
+
+        .line:nth-child(1) {
+            top: 0; left: -100%; width: 100%; height: 4px;
+            background: linear-gradient(90deg, transparent, #03e9f4);
+            animation: animate1 2s linear infinite;
+        }
+        @keyframes animate1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
+
+        .line:nth-child(2) {
+            top: -100%; right: 0; width: 4px; height: 100%;
+            background: linear-gradient(180deg, transparent, #03e9f4);
+            animation: animate2 2s linear infinite; animation-delay: 0.5s;
+        }
+        @keyframes animate2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
+
+        .line:nth-child(3) {
+            bottom: 0; right: -100%; width: 100%; height: 4px;
+            background: linear-gradient(270deg, transparent, #03e9f4);
+            animation: animate3 2s linear infinite; animation-delay: 1s;
+        }
+        @keyframes animate3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
+
+        .line:nth-child(4) {
+            bottom: -100%; left: 0; width: 4px; height: 100%;
+            background: linear-gradient(360deg, transparent, #03e9f4);
+            animation: animate4 2s linear infinite; animation-delay: 1.5s;
+        }
+        @keyframes animate4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
+
+        /* حالة النجاح (يتحول للأخضر) */
+        .qr-box.success .line:nth-child(1) { background: linear-gradient(90deg, transparent, #2ecc71); }
+        .qr-box.success .line:nth-child(2) { background: linear-gradient(180deg, transparent, #2ecc71); }
+        .qr-box.success .line:nth-child(3) { background: linear-gradient(270deg, transparent, #2ecc71); }
+        .qr-box.success .line:nth-child(4) { background: linear-gradient(360deg, transparent, #2ecc71); }
         
-        .device-badge { position: absolute; top: 20px; left: 20px; background-color: #eef2f7; color: #2c3e50; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 14px; border: 1px solid #dce4ec; display: flex; align-items: center; gap: 5px; }
-        .status-dot { width: 8px; height: 8px; background-color: #27ae60; border-radius: 50%; display: inline-block; }
-
-        h1 { color: #2c3e50; margin-bottom: 5px; margin-top: 10px; }
-        .status-text { color: #7f8c8d; font-size: 18px; margin-bottom: 30px; font-weight: 500; }
-
-        /* 🐍 تصميم الثعبان (نفس اللي عندك) */
-        .qr-wrapper { position: relative; width: 260px; height: 260px; margin: 0 auto 20px auto; display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.1); overflow: hidden; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        .qr-wrapper span { position: absolute; display: block; }
-        .qr-wrapper span:nth-child(1) { top: 0; left: -100%; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #3498db); animation: btn-anim1 2s linear infinite; }
-        @keyframes btn-anim1 { 0% { left: -100%; } 50%,100% { left: 100%; } }
-        .qr-wrapper span:nth-child(2) { top: -100%; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, transparent, #3498db); animation: btn-anim2 2s linear infinite; animation-delay: 0.5s; }
-        @keyframes anim2 { 0% { top: -100%; } 50%,100% { top: 100%; } }
-        .qr-wrapper span:nth-child(3) { bottom: 0; right: -100%; width: 100%; height: 4px; background: linear-gradient(270deg, transparent, #3498db); animation: btn-anim3 2s linear infinite; animation-delay: 1s; }
-        @keyframes anim3 { 0% { right: -100%; } 50%,100% { right: 100%; } }
-        .qr-wrapper span:nth-child(4) { bottom: -100%; left: 0; width: 4px; height: 100%; background: linear-gradient(360deg, transparent, #3498db); animation: btn-anim4 2s linear infinite; animation-delay: 1.5s; }
-        @keyframes anim4 { 0% { bottom: -100%; } 50%,100% { bottom: 100%; } }
-
-        /* النجاح - يصير أخضر */
-        .qr-wrapper.success span:nth-child(1) { background: linear-gradient(90deg, transparent, #27ae60); }
-        .qr-wrapper.success span:nth-child(2) { background: linear-gradient(180deg, transparent, #27ae60); }
-        .qr-wrapper.success span:nth-child(3) { background: linear-gradient(270deg, transparent, #27ae60); }
-        .qr-wrapper.success span:nth-child(4) { background: linear-gradient(360deg, transparent, #27ae60); }
-
-        #qrcode { padding: 15px; background: white; z-index: 1; border: 1px solid #eee; }
-        .session-info { font-size: 14px; color: #bdc3c7; margin-top: 20px; }
-        .refresh-btn { margin-top: 20px; background: #ecf0f1; border: none; padding: 8px 20px; border-radius: 5px; color: #7f8c8d; cursor: pointer; font-weight: bold; }
-
-        /* إطار الطباعة المخفي */
-        #print-frame { position: absolute; width: 0; height: 0; border: 0; visibility: hidden; }
-        #error-msg { color: red; font-size: 12px; margin-top: 10px; display: none; }
+        #status { margin-top: 20px; color: #888; font-size: 14px; }
+        
+        iframe { width: 0; height: 0; border: 0; position: absolute; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="device-badge"><span class="status-dot"></span>جهاز رقم <span id="device-id-display">--</span></div>
 
-        <h1>امسح الكود لرفع الملف</h1>
-        <p class="status-text">بانتظار الملف من الجوال...</p>
+    <div class="container">
+        <h1>امسح للطباعة</h1>
         
-        <div class="qr-wrapper" id="snake-box">
-            <span></span> <span></span> <span></span> <span></span>
+        <div class="qr-box" id="snake-container">
+            <span class="line"></span>
+            <span class="line"></span>
+            <span class="line"></span>
+            <span class="line"></span>
             <div id="qrcode"></div>
         </div>
-        
-        <div class="session-info">رقم الجلسة: <span id="session-display"></span></div>
-        <div id="error-msg"></div>
-        <button class="refresh-btn" onclick="location.reload()">🔄 تحديث الجلسة</button>
+
+        <div id="status">بانتظار الملف...</div>
     </div>
 
-    <iframe id="print-frame" name="print-frame"></iframe>
+    <iframe id="print-frame"></iframe>
 
     <script>
-        const KIOSK_NUMBER = "01"; 
+        // إعدادات
         const CLOUD_NAME = "duyei6hrk"; 
-        
-        // تأكد أن هذه الروابط صحيحة
-        const MOBILE_PAGE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html"; 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
-        
-        document.getElementById("device-id-display").innerText = KIOSK_NUMBER;
+        const KIOSK_ID = "01";
+        const GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbzfDeJDsZdQz6HL6SViqlvLVXktRW3CNYCcSfrsDDBgcgkaTH0D0sC6Z8KF7IXzxfU3/exec";
+        const MOBILE_URL = "https://theproject8383-spec.github.io/kiosk-uploader/mobile_upload_v2.html";
+
+        // جلسة جديدة
         const sessionId = Math.floor(Math.random() * 1000000);
-        document.getElementById("session-display").innerText = sessionId;
+        
+        // إنشاء الباركود
+        const fullLink = `${MOBILE_URL}?session_id=${sessionId}&kiosk_id=${KIOSK_ID}`;
+        new QRCode(document.getElementById("qrcode"), { text: fullLink, width: 200, height: 200 });
 
-        setTimeout(() => { window.location.reload(); }, 600000);
+        // فحص الملفات
+        let checkTimer = setInterval(checkFile, 3000);
 
-        const fullUrl = `${MOBILE_PAGE_URL}?session_id=${sessionId}&kiosk_id=${KIOSK_NUMBER}`;
-        new QRCode(document.getElementById("qrcode"), { text: fullUrl, width: 200, height: 200, correctLevel : QRCode.CorrectLevel.H });
-
-        let pollingTimer = setInterval(checkForFile, 3000);
-
-        function checkForFile() {
-            fetch(`${GOOGLE_SCRIPT_URL}?action=check_file&session_id=${sessionId}&kiosk_id=${KIOSK_NUMBER}`)
-            .then(response => response.json())
+        function checkFile() {
+            fetch(`${GOOGLE_SCRIPT}?action=check_file&session_id=${sessionId}&kiosk_id=${KIOSK_ID}`)
+            .then(res => res.json())
             .then(data => {
                 if (data.status === "found") {
-                    clearInterval(pollingTimer);
+                    clearInterval(checkTimer);
                     
-                    document.querySelector('.status-text').innerText = "تم الاستلام! جاري التحضير...";
-                    document.querySelector('.status-text').style.color = "#27ae60"; 
-                    document.getElementById('snake-box').classList.add('success');
+                    // تغيير التصميم للنجاح
+                    document.getElementById("status").innerText = "✅ تم الاستلام! جاري الطباعة...";
+                    document.getElementById("status").style.color = "#2ecc71";
+                    document.getElementById("snake-container").classList.add("success");
 
-                    let fileUrl = data.file_url;
-                    if (!fileUrl || !fileUrl.startsWith('http')) {
-                        fileUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${data.file_uuid}`;
+                    // تجهيز الرابط
+                    let finalUrl = data.file_url;
+                    // إصلاح الرابط إذا كان مجرد معرف
+                    if (!finalUrl.startsWith("http")) {
+                        finalUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${data.file_uuid}.pdf`;
+                    } else if (!finalUrl.endsWith(".pdf")) {
+                         // تأكد أن الرابط ينتهي بـ pdf عشان المتصفح يفهمه كملف طباعة
+                        finalUrl = finalUrl + ".pdf";
                     }
-                    // إضافة .pdf إذا لم تكن موجودة
-                    if (!fileUrl.toLowerCase().endsWith('.pdf')) fileUrl += ".pdf";
 
-                    console.log("Printing URL:", fileUrl); 
-                    
-                    // هنا التعديل المهم: استخدام دالة التحميل الآمنة
-                    downloadAndPrint(fileUrl);
+                    console.log("Printing: " + finalUrl);
+                    triggerPrint(finalUrl);
                 }
-            }).catch(error => console.log("Waiting..."));
+            })
+            .catch(err => console.log("waiting..."));
         }
 
-        // دالة التحميل والطباعة الآمنة (تحل مشكلة SecurityError)
-        function downloadAndPrint(url) {
-            document.querySelector('.status-text').innerText = "جاري تحميل الملف...";
-            
-            fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error("فشل التحميل: " + response.status);
-                return response.blob();
-            })
-            .then(blob => {
-                // إنشاء رابط محلي آمن
-                const localUrl = URL.createObjectURL(blob);
-                const iframe = document.getElementById('print-frame');
-                iframe.src = localUrl;
+        function triggerPrint(url) {
+            const iframe = document.getElementById("print-frame");
+            // نضع الرابط مباشرة في الـ iframe
+            iframe.src = url;
 
-                iframe.onload = function() {
-                    document.querySelector('.status-text').innerText = "جاري الطباعة الآن...";
-                    setTimeout(() => {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                        URL.revokeObjectURL(localUrl);
-                    }, 1000);
-                };
-            })
-            .catch(error => {
-                console.error("خطأ في الطباعة:", error);
-                document.getElementById('error-msg').innerText = "خطأ في الطباعة، تأكد من Cloudinary";
-                document.getElementById('error-msg').style.display = 'block';
-            });
+            // خدعة بسيطة: انتظر ثانيتين حتى يحمل الملف ثم اطبعه
+            iframe.onload = function() {
+                setTimeout(() => {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                }, 1000);
+            };
+            
+            // احتياط: لو الـ onload ما اشتغل (يصير أحيانا مع PDF)، جرب اطبع بعد 3 ثواني
+            setTimeout(() => {
+                 iframe.contentWindow.focus();
+                 iframe.contentWindow.print();
+            }, 3000);
         }
     </script>
 </body>
